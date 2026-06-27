@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Groundwater Resource Evaluation</title>
+     <link rel="stylesheet" href="static/style.css">
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
+}
+
+body{
+
+background:#06141f;
+color:white;
+overflow-x:hidden;
+
+}
+
+/******************************
+BACKGROUND
+******************************/
+
+body::before{
+
+content:"";
+position:fixed;
+top:-200px;
+left:-200px;
+
+width:700px;
+height:700px;
+
+background:radial-gradient(circle,#00d9ff55,transparent 70%);
+z-index:-2;
+
+animation:move1 12s infinite alternate;
+
+}
+
+body::after{
+
+content:"";
+position:fixed;
+bottom:-200px;
+right:-150px;
+
+width:700px;
+height:700px;
+
+background:radial-gradient(circle,#00ffbb33,transparent 70%);
+z-index:-2;
+
+animation:move2 10s infinite alternate;
+
+}
+
+@keyframes move1{
+
+100%{
+
+transform:translate(120px,120px);
+
+}
+
+}
+
+@keyframes move2{
+
+100%{
+
+transform:translate(-120px,-100px);
+
+}
+
+}
+
+/******************************
+HERO
+******************************/
+
+.hero{
+
+min-height:100vh;
+
+display:flex;
+
+align-items:center;
+
+padding-top:90px;
+
+}
+
+.hero h1{
+
+font-size:62px;
+
+font-weight:700;
+
+line-height:1.2;
+
+}
+
+.hero h1 span{
+
+color:#00ffff;
+
+text-shadow:0 0 25px cyan;
+
+}
+
+.hero p{
+
+font-size:19px;
+
+margin-top:25px;
+
+color:#d4e6ee;
+
+line-height:32px;
+
+}
+
+.btn-main{
+
+padding:14px 35px;
+
+border-radius:50px;
+
+font-weight:600;
+
+margin-right:15px;
+
+text-decoration:none;
+
+display:inline-block;
+
+transition:.4s;
+
+}
+
+.btn1{
+
+background:#00d2ff;
+
+color:#000;
+
+}
+
+.btn2{
+
+border:2px solid cyan;
+
+color:white;
+
+}
+
+.btn-main:hover{
+
+transform:translateY(-5px);
+
+box-shadow:0 10px 30px cyan;
+
+}
+
+/******************************
+RIGHT IMAGE
+******************************/
+
+.hero-image{
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+}
+
+.circle{
+
+width:430px;
+
+height:430px;
+
+border-radius:50%;
+
+background:linear-gradient(135deg,#00e5ff,#0066ff);
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+font-size:180px;
+
+box-shadow:
+
+0 0 60px cyan,
+
+0 0 120px #00c3ff;
+
+animation:float 4s infinite ease-in-out;
+
+}
+
+@keyframes float{
+
+50%{
+
+transform:translateY(-20px);
+
+}
+
+}
+
+/******************************
+STATS
+******************************/
+
+.stats{
+
+margin-top:-60px;
+
+margin-bottom:100px;
+
+}
+
+.stat-card{
+
+background:rgba(255,255,255,.08);
+
+backdrop-filter:blur(15px);
+
+border:1px solid rgba(255,255,255,.15);
+
+padding:35px;
+
+text-align:center;
+
+border-radius:25px;
+
+transition:.4s;
+
+}
+
+.stat-card:hover{
+
+transform:translateY(-12px);
+
+box-shadow:0 20px 40px rgba(0,255,255,.35);
+
+}
+
+.stat-card i{
+
+font-size:45px;
+
+color:cyan;
+
+margin-bottom:20px;
+
+}
+
+.stat-card h2{
+
+font-size:40px;
+
+font-weight:700;
+
+}
+
+.stat-card p{
+
+color:#cfd8dc;
+
+}
+
+/******************************
+ABOUT
+******************************/
+
+.section-title{
+
+text-align:center;
+
+font-size:42px;
+
+font-weight:700;
+
+margin-bottom:60px;
+
+}
+
+.section-title span{
+
+color:cyan;
+
+}
+
+.about-card{
+
+background:rgba(255,255,255,.08);
+
+padding:50px;
+
+border-radius:25px;
+
+backdrop-filter:blur(15px);
+
+border:1px solid rgba(255,255,255,.15);
+
+}
+
+.about-card p{
+
+font-size:18px;
+
+line-height:34px;
+
+color:#dde8ef;
+
+}
+
+@media(max-width:992px){
+
+.hero{
+
+text-align:center;
+
+}
+
+.hero h1{
+
+font-size:42px;
+
+}
+
+.circle{
+
+margin-top:60px;
+
+width:300px;
+
+height:300px;
+
+font-size:120px;
+
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+{% include "navbar.html" %}
+
+<div class="container hero">
+
+<div class="row align-items-center">
+
+<div class="col-lg-6">
+
+<h1>
+
+AI Powered
+
+<span>Groundwater</span>
+
+Monitoring
+
+</h1>
+
+<p>
+
+Predict groundwater levels using Digital Water Level Recorder (DWLR) data,
+Machine Learning algorithms, and real-time environmental parameters.
+Our intelligent system helps researchers, authorities, and decision-makers
+monitor groundwater resources, identify trends, and support sustainable water
+management through accurate forecasting.
+
+</p>
+
+<br>
+
+<a href="/dashboard" class="btn-main btn1">
+
+Explore Dashboard
+
+</a>
+
+<a href="/map" class="btn-main btn2">
+
+View Map
+
+</a>
+
+</div>
+
+<div class="col-lg-6 hero-image">
+
+<div class="circle">
+
+💧
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<section class="stats">
+
+<div class="container">
+
+<div class="row g-4">
+
+<div class="col-md-3">
+
+<div class="stat-card">
+
+<i class="fa-solid fa-water"></i>
+
+<h2>250+</h2>
+
+<p>DWLR Stations</p>
+
+</div>
+
+</div>
+
+<div class="col-md-3">
+
+<div class="stat-card">
+
+<i class="fa-solid fa-chart-line"></i>
+
+<h2>98%</h2>
+
+<p>Prediction Accuracy</p>
+
+</div>
+
+</div>
+
+<div class="col-md-3">
+
+<div class="stat-card">
+
+<i class="fa-solid fa-cloud-rain"></i>
+
+<h2>24/7</h2>
+
+<p>Monitoring</p>
+
+</div>
+
+</div>
+
+<div class="col-md-3">
+
+<div class="stat-card">
+
+<i class="fa-solid fa-robot"></i>
+
+<h2>AI</h2>
+
+<p>Machine Learning</p>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+<section class="container mb-5">
+
+<h2 class="section-title">
+
+About <span>Project</span>
+
+</h2>
+
+<div class="about-card">
+
+<p>
+
+The Real-Time Groundwater Resource Evaluation System leverages
+Digital Water Level Recorder (DWLR) datasets, Artificial Intelligence,
+Machine Learning, and Time-Series Analysis to predict groundwater levels
+with high accuracy. The platform analyzes historical and real-time
+groundwater data alongside rainfall, temperature, and environmental
+parameters to provide forecasts, trend analysis, interactive visualizations,
+and early warning alerts. It empowers researchers, government agencies,
+and policymakers to make informed decisions for sustainable groundwater
+resource management.
+
+</p>
+
+</div>
+
+</section>
+<!-- ================= FEATURES ================= -->
+
+<section class="container py-5">
+
+    <h2 class="section-title">
+        Key <span>Features</span>
+    </h2>
+
+    <div class="row g-4">
+
+        <div class="col-lg-4 col-md-6">
+            <div class="feature-card">
+                <i class="fa-solid fa-chart-line"></i>
+                <h4>AI Prediction</h4>
+                <p>
+                    Predict future groundwater levels using Machine Learning
+                    and Time-Series models.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+            <div class="feature-card">
+                <i class="fa-solid fa-map-location-dot"></i>
+                <h4>Interactive Map</h4>
+                <p>
+                    Visualize groundwater monitoring stations across different
+                    districts.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+            <div class="feature-card">
+                <i class="fa-solid fa-cloud-rain"></i>
+                <h4>Real-Time Data</h4>
+                <p>
+                    Receive continuously updated DWLR readings with weather
+                    parameters.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+            <div class="feature-card">
+                <i class="fa-solid fa-chart-column"></i>
+                <h4>Analytics Dashboard</h4>
+                <p>
+                    Interactive charts and trend analysis for better decision
+                    making.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+            <div class="feature-card">
+                <i class="fa-solid fa-robot"></i>
+                <h4>AI Chatbot</h4>
+                <p>
+                    Get instant answers regarding groundwater statistics and
+                    prediction.
+                </p>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+            <div class="feature-card">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <h4>Early Warning</h4>
+                <p>
+                    Detect groundwater depletion and generate intelligent
+                    alerts.
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ================= HOW IT WORKS ================= -->
+
+<section class="container py-5">
+
+    <h2 class="section-title">
+
+        How <span>It Works</span>
+
+    </h2>
+
+    <div class="timeline">
+
+        <div class="timeline-box">
+            <i class="fa-solid fa-database"></i>
+            <h5>DWLR Data</h5>
+            <p>Collect groundwater data from Digital Water Level Recorders.</p>
+        </div>
+
+        <div class="timeline-box">
+            <i class="fa-solid fa-filter"></i>
+            <h5>Data Cleaning</h5>
+            <p>Missing values are cleaned and normalized.</p>
+        </div>
+
+        <div class="timeline-box">
+            <i class="fa-solid fa-brain"></i>
+            <h5>AI Model</h5>
+            <p>Machine Learning predicts future groundwater levels.</p>
+        </div>
+
+        <div class="timeline-box">
+            <i class="fa-solid fa-chart-area"></i>
+            <h5>Visualization</h5>
+            <p>Interactive charts and graphs display groundwater trends.</p>
+        </div>
+
+        <div class="timeline-box">
+            <i class="fa-solid fa-bell"></i>
+            <h5>Alerts</h5>
+            <p>Early warning notifications help prevent depletion.</p>
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ================= TECHNOLOGIES ================= -->
+
+<section class="container py-5">
+
+<h2 class="section-title">
+
+Technology <span>Stack</span>
+
+</h2>
+
+<div class="tech-grid">
+
+<div class="tech-item">
+<i class="fab fa-python"></i>
+Python
+</div>
+
+<div class="tech-item">
+<i class="fa-solid fa-database"></i>
+MySQL
+</div>
+
+<div class="tech-item">
+<i class="fab fa-html5"></i>
+HTML5
+</div>
+
+<div class="tech-item">
+<i class="fab fa-css3-alt"></i>
+CSS3
+</div>
+
+<div class="tech-item">
+<i class="fab fa-js"></i>
+JavaScript
+</div>
+
+<div class="tech-item">
+<i class="fab fa-bootstrap"></i>
+Bootstrap
+</div>
+
+<div class="tech-item">
+<i class="fa-solid fa-chart-simple"></i>
+Plotly
+</div>
+
+<div class="tech-item">
+<i class="fa-solid fa-microchip"></i>
+TensorFlow
+</div>
+
+<div class="tech-item">
+<i class="fab fa-github"></i>
+GitHub
+</div>
+
+</div>
+
+</section>
+
+<!-- ================= CTA ================= -->
+
+<section class="container py-5">
+
+<div class="cta">
+
+<h2>
+
+Ready to Explore Groundwater Intelligence?
+
+</h2>
+
+<p>
+
+Monitor groundwater levels, visualize district-wise data,
+and predict future trends with Artificial Intelligence.
+
+</p>
+
+<a href="/district" class="btn-main btn1">
+
+Explore Dashboard
+
+</a>
+
+<a href="/realtime-groundwater" class="btn-main btn2">
+
+Live Monitoring
+
+</a>
+
+</div>
+
+</section>
+
+<!-- ================= FOOTER ================= -->
+
+<footer>
+
+<div class="container">
+
+<h3>
+
+💧 Groundwater Resource Evaluation
+
+</h3>
+
+<p>
+
+AI Powered Groundwater Prediction using Digital Water Level Recorder (DWLR) Data
+
+</p>
+
+<hr>
+
+<p>
+
+© 2026 All Rights Reserved
+
+</p>
+
+</div>
+
+</footer>
+</body>
+</html>

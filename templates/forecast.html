@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Groundwater Level Forecasting & Interpretability</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cyberDark: '#070b19',
+                        cyberCard: 'rgba(13, 21, 39, 0.5)',
+                        cyberCyan: '#00f2fe',
+                        cyberBlue: '#4facfe',
+                        cyberGreen: '#00f5a0'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Bootstrap 5 CSS (Required for navbar) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        body {
+            background-color: #070b19 !important;
+            color: #f8fafc !important;
+            font-family: 'Poppins', sans-serif;
+            background-image: 
+                radial-gradient(rgba(0, 242, 254, 0.08) 1px, transparent 0),
+                radial-gradient(rgba(0, 242, 254, 0.05) 1px, transparent 0);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+        }
+
+        /* Premium scrollbar customizer */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #070b19;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+
+        /* Floating dynamic glow blobs */
+        .glow-orb {
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            z-index: -2;
+            filter: blur(120px);
+            pointer-events: none;
+            opacity: 0.35;
+        }
+        .orb-1 {
+            background: radial-gradient(circle, #00f2fe, #4facfe, transparent 70%);
+            top: -10%;
+            left: -10%;
+            animation: floatOrb1 20s infinite alternate ease-in-out;
+        }
+        .orb-2 {
+            background: radial-gradient(circle, #00f5a0, #00d9ff, transparent 70%);
+            bottom: -10%;
+            right: -10%;
+            animation: floatOrb2 18s infinite alternate ease-in-out;
+        }
+        @keyframes floatOrb1 {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(80px, 60px) scale(1.1); }
+        }
+        @keyframes floatOrb2 {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(-80px, -60px) scale(1.15); }
+        }
+    </style>
+</head>
+<body class="bg-cyberDark text-slate-100 min-h-screen pt-24 pb-12">
+    {% include "navbar.html" %}
+
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+
+    <div class="container mx-auto px-4">
+        <!-- HEADER -->
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold tracking-tight text-white mb-3">
+                AI Powered <span class="bg-gradient-to-r from-cyberCyan to-cyberBlue bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(0,242,254,0.3)]">Groundwater Forecasting</span>
+            </h1>
+            <p class="text-slate-400 max-w-2xl mx-auto text-sm">
+                Forecast future water tables across multiple horizons (7 days to 1 year) and inspect feature importances with transparent machine learning explainability models.
+            </p>
+        </div>
+
+        <!-- CONTROL BAR -->
+        <div class="glass-card bg-cyberCard border border-white/5 backdrop-blur-2xl rounded-3xl p-6 shadow-2xl mb-8 transition hover:border-cyberCyan/20">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                <div class="md:col-span-2">
+                    <label class="block text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wider"><i class="fa-solid fa-location-dot text-cyberCyan mr-2"></i>Select District</label>
+                    <select id="districtSelect" aria-label="Select District" class="w-full bg-slate-900/60 text-white border border-cyberCyan/20 rounded-xl px-4 py-3 text-sm focus:border-cyberCyan focus:ring-1 focus:ring-cyberCyan focus:outline-none">
+                        <option value="">Select District</option>
+                        {% for d in districts %}
+                        <option value="{{ d }}">{{ d }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-slate-400 text-xs font-semibold mb-2 uppercase tracking-wider"><i class="fa-solid fa-house-chimney text-cyberCyan mr-2"></i>Station / Village</label>
+                    <select id="stationSelect" aria-label="Select Station" class="w-full bg-slate-900/60 text-white border border-cyberCyan/20 rounded-xl px-4 py-3 text-sm focus:border-cyberCyan focus:ring-1 focus:ring-cyberCyan focus:outline-none">
+                        <option value="">Select Station (Optional)</option>
+                    </select>
+                </div>
+                <div>
+                    <button id="runForecastBtn" class="w-full bg-gradient-to-r from-cyberCyan to-cyberBlue text-cyberDark font-bold py-3 px-6 rounded-xl hover:translate-y-[-2px] hover:shadow-[0_0_20px_rgba(0,242,254,0.4)] transition duration-300">
+                        <i class="fa-solid fa-brain mr-2"></i>Predict & Explain
+                    </button>
+                </div>
+            </div>
+            <div id="errorBanner" class="hidden alert bg-red-900/30 border border-red-500/50 text-red-200 text-sm p-4 rounded-xl mt-4"></div>
+        </div>
+
+        <!-- MAIN LAYOUT (LOADING STATE) -->
+        <div id="loadingState" class="hidden text-center py-20">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cyberCyan mb-4"></div>
+            <p class="text-slate-400">Loading dynamic time-series features and evaluating forecasting architectures...</p>
+        </div>
+
+        <!-- MAIN DASHBOARD DATA -->
+        <div id="dashboardContent" class="hidden space-y-8">
+            <!-- ALERTS NOTIFICATION BOARD -->
+            <div id="alertsContainer" class="hidden grid grid-cols-1 gap-3">
+                <!-- Alerts are dynamically injected here -->
+            </div>
+
+            <!-- FORECAST VISUAL TIMELINE -->
+            <div class="glass-card bg-cyberCard border border-white/5 backdrop-blur-2xl rounded-3xl p-6 shadow-2xl">
+                <div class="flex justify-between items-center mb-6">
+                    <h5 class="text-lg font-bold border-l-4 border-cyberCyan pl-3 text-white">
+                        <i class="fa-solid fa-chart-line text-cyberCyan mr-2"></i>Water Table Forecast Timeline
+                    </h5>
+                    <div class="flex gap-2">
+                        <button id="exportCsvBtn" class="bg-slate-800 border border-white/10 hover:border-cyberCyan/40 text-xs px-3 py-2 rounded-xl transition"><i class="fa-solid fa-file-csv text-green-400 mr-1"></i>Export CSV</button>
+                        <button id="exportPdfBtn" class="bg-slate-800 border border-white/10 hover:border-cyberCyan/40 text-xs px-3 py-2 rounded-xl transition"><i class="fa-solid fa-file-pdf text-red-400 mr-1"></i>Download PDF</button>
+                    </div>
+                </div>
+                <div class="relative w-full h-[360px]">
+                    <canvas id="timelineChart"></canvas>
+                </div>
+            </div>
+
+            <!-- MODEL SELECTION DETAILS & METRICS -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Model details -->
+                <div class="glass-card bg-cyberCard border border-white/5 backdrop-blur-2xl rounded-3xl p-6 shadow-2xl flex flex-col justify-between">
+                    <div>
+                        <h5 class="text-md font-bold border-l-4 border-cyberCyan pl-3 text-white mb-4">AI Model Status</h5>
+                        <div class="space-y-4">
+                            <div>
+                                <span class="text-slate-400 text-xs uppercase block">Best Model Selected</span>
+                                <span id="lblModelName" class="text-xl font-bold text-cyberCyan">--</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-400 text-xs uppercase block">Validation Performance</span>
+                                <div class="grid grid-cols-2 gap-2 mt-2">
+                                    <div class="bg-slate-900/40 p-2 rounded-lg border border-white/5 text-center">
+                                        <span class="text-[10px] text-slate-400 uppercase block">MAE</span>
+                                        <span id="lblMAE" class="text-sm font-semibold text-white">--</span>
+                                    </div>
+                                    <div class="bg-slate-900/40 p-2 rounded-lg border border-white/5 text-center">
+                                        <span class="text-[10px] text-slate-400 uppercase block">RMSE</span>
+                                        <span id="lblRMSE" class="text-sm font-semibold text-white">--</span>
+                                    </div>
+                                    <div class="bg-slate-900/40 p-2 rounded-lg border border-white/5 text-center">
+                                        <span class="text-[10px] text-slate-400 uppercase block">MAPE</span>
+                                        <span id="lblMAPE" class="text-sm font-semibold text-cyberGreen">--</span>
+                                    </div>
+                                    <div class="bg-slate-900/40 p-2 rounded-lg border border-white/5 text-center">
+                                        <span class="text-[10px] text-slate-400 uppercase block">R² Score</span>
+                                        <span id="lblR2" class="text-sm font-semibold text-cyberCyan">--</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-white/5 text-xs text-slate-500">
+                        Evaluated all architectures (LSTM, XGBoost, Random Forest, ARIMA, Prophet) and auto-selected lowest cross-validation MAE.
+                    </div>
+                </div>
+
+                <!-- Explanation / SHAP summary -->
+                <div class="glass-card bg-cyberCard border border-white/5 backdrop-blur-2xl rounded-3xl p-6 shadow-2xl md:col-span-2">
+                    <h5 class="text-md font-bold border-l-4 border-cyberCyan pl-3 text-white mb-4">Local Prediction Explanation (Top Contributing Factors)</h5>
+                    <div id="shapSummaryContainer" class="space-y-2 text-sm text-slate-300">
+                        <p class="text-slate-500">Select a district and run predictions to view SHAP factor outputs.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- EXPLAINABILITY CHARTS -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="glass-card bg-cyberCard border border-white/5 backdrop-blur-2xl rounded-3xl p-6 shadow-2xl">
+                    <h5 class="text-md font-bold border-l-4 border-cyberCyan pl-3 text-white mb-4">SHAP Factor Contribution Values</h5>
+                    <div class="relative w-full h-[280px]">
+                        <canvas id="shapChart"></canvas>
+                    </div>
+                </div>
+                <div class="glass-card bg-cyberCard border border-white/5 backdrop-blur-2xl rounded-3xl p-6 shadow-2xl">
+                    <h5 class="text-md font-bold border-l-4 border-cyberCyan pl-3 text-white mb-4">Global Feature Importances</h5>
+                    <div class="relative w-full h-[280px]">
+                        <canvas id="importanceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FORECAST TABLE -->
+            <div class="glass-card bg-cyberCard border border-white/5 backdrop-blur-2xl rounded-3xl p-6 shadow-2xl overflow-hidden">
+                <h5 class="text-lg font-bold border-l-4 border-cyberCyan pl-3 text-white mb-4">Forecast Predictions Table</h5>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm border-collapse">
+                        <thead>
+                            <tr class="border-b border-white/10 text-slate-400 uppercase tracking-wider text-xs">
+                                <th class="py-3 px-4">Horizon</th>
+                                <th class="py-3 px-4">Forecast Date</th>
+                                <th class="py-3 px-4">Predicted Depth (m)</th>
+                                <th class="py-3 px-4">Confidence score</th>
+                                <th class="py-3 px-4">Prediction Model</th>
+                                <th class="py-3 px-4">Safety Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="forecastTableBody" class="divide-y divide-white/5">
+                            <!-- Rows injected dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT LOGIC -->
+    <script>
+        let timelineChart = null;
+        let shapChart = null;
+        let importanceChart = null;
+        let globalForecastData = null;
+
+        // Dynamic Station Loader
+        document.getElementById('districtSelect').addEventListener('change', function() {
+            const district = this.value;
+            const stationSelect = document.getElementById('stationSelect');
+            stationSelect.innerHTML = '<option value="">Loading stations...</option>';
+            
+            if (!district) {
+                stationSelect.innerHTML = '<option value="">Select Station (Optional)</option>';
+                return;
+            }
+            
+            fetch(`/api/stations?district=${encodeURIComponent(district)}`)
+                .then(res => res.json())
+                .then(stations => {
+                    stationSelect.innerHTML = '<option value="">Select Station (Optional)</option>';
+                    stations.forEach(st => {
+                        const opt = document.createElement('option');
+                        opt.value = st;
+                        opt.textContent = st;
+                        stationSelect.appendChild(opt);
+                    });
+                })
+                .catch(err => {
+                    console.error("Error loading stations:", err);
+                    stationSelect.innerHTML = '<option value="">Select Station (Optional)</option>';
+                });
+        });
+
+        // Run Forecast Handler
+        document.getElementById('runForecastBtn').addEventListener('click', async function() {
+            const runBtn = this;
+            const district = document.getElementById('districtSelect').value;
+            const station = document.getElementById('stationSelect').value;
+            const errorBanner = document.getElementById('errorBanner');
+            
+            errorBanner.classList.add('hidden');
+            if (!district) {
+                errorBanner.textContent = "Please select a district to perform prediction.";
+                errorBanner.classList.remove('hidden');
+                return;
+            }
+            
+            // Show loading & Disable button to prevent double-submits
+            runBtn.disabled = true;
+            const originalHtml = runBtn.innerHTML;
+            runBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Optimizing...';
+            
+            document.getElementById('dashboardContent').classList.add('hidden');
+            document.getElementById('loadingState').classList.remove('hidden');
+            
+            try {
+                // 1. Fetch predictions history & forecast details
+                const forecastRes = await fetch(`/forecast?district=${encodeURIComponent(district)}&station=${encodeURIComponent(station)}`);
+                const forecastData = await forecastRes.json();
+                
+                if (!forecastRes.ok) {
+                    throw new Error(forecastData.error || "Failed to generate forecasts.");
+                }
+                
+                // 2. Fetch explainer data
+                const explainRes = await fetch(`/feature-importance?district=${encodeURIComponent(district)}&station=${encodeURIComponent(station)}`);
+                const explainData = await explainRes.json();
+                
+                // 3. Fetch alerts
+                const alertsRes = await fetch(`/alerts?district=${encodeURIComponent(district)}&station=${encodeURIComponent(station)}`);
+                const alertsData = await alertsRes.json();
+
+                // 4. Fetch dynamic tuning performance parameters
+                let perfData = null;
+                try {
+                    const perfRes = await fetch(`/api/model-performance?district=${encodeURIComponent(district)}&station=${encodeURIComponent(station)}`);
+                    if (perfRes.ok) {
+                        perfData = await perfRes.json();
+                    }
+                } catch (perfErr) {
+                    console.warn("Performance metrics fetch bypassed:", perfErr);
+                }
+                
+                globalForecastData = forecastData;
+                
+                // Bind indicators
+                document.getElementById('lblModelName').textContent = forecastData.model_used;
+                document.getElementById('lblMAE').textContent = Number(forecastData.mae).toFixed(3);
+                document.getElementById('lblRMSE').textContent = Number(forecastData.rmse).toFixed(3);
+                
+                if (perfData && perfData.best_model_metrics) {
+                    const metrics = perfData.best_model_metrics;
+                    document.getElementById('lblMAPE').textContent = metrics.mape ? (Number(metrics.mape).toFixed(2) + "%") : "--";
+                    document.getElementById('lblR2').textContent = metrics.r2 ? Number(metrics.r2).toFixed(3) : "--";
+                } else {
+                    document.getElementById('lblMAPE').textContent = "--";
+                    document.getElementById('lblR2').textContent = "--";
+                }
+                
+                // Render Alerts
+                renderAlerts(alertsData.alerts);
+                
+                // Render Explanations Summaries
+                renderExplainerSummary(explainData.explanation);
+                
+                // Render Charts
+                renderTimelineChart(forecastData);
+                renderShapChart(explainData.explanation);
+                renderImportanceChart(explainData.explanation);
+                
+                // Render Table
+                renderForecastTable(forecastData);
+                
+                // Show dashboard
+                document.getElementById('loadingState').classList.add('hidden');
+                document.getElementById('dashboardContent').classList.remove('hidden');
+                
+            } catch (err) {
+                console.error(err);
+                document.getElementById('loadingState').classList.add('hidden');
+                errorBanner.textContent = err.message;
+                errorBanner.classList.remove('hidden');
+            } finally {
+                // Restore button state
+                runBtn.disabled = false;
+                runBtn.innerHTML = originalHtml;
+            }
+        });
+
+        // 1. Render Alert cards
+        function renderAlerts(alerts) {
+            const container = document.getElementById('alertsContainer');
+            container.innerHTML = "";
+            
+            if (!alerts || alerts.length === 0) {
+                container.classList.add('hidden');
+                return;
+            }
+            
+            container.classList.remove('hidden');
+            alerts.forEach(al => {
+                let borderClass = "border-blue-500/30 bg-blue-900/10 text-blue-200";
+                let iconClass = "fa-circle-info text-blue-400";
+                
+                if (al.severity === "CRITICAL") {
+                    borderClass = "border-red-500/40 bg-red-950/20 text-red-200 animate-pulse";
+                    iconClass = "fa-triangle-exclamation text-red-400";
+                } else if (al.severity === "WARNING") {
+                    borderClass = "border-amber-500/30 bg-amber-900/15 text-amber-200";
+                    iconClass = "fa-circle-exclamation text-amber-400";
+                } else if (al.type === "RECHARGE_OPPORTUNITY") {
+                    borderClass = "border-green-500/30 bg-green-950/15 text-green-200";
+                    iconClass = "fa-seedling text-green-400";
+                }
+                
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-xl border flex flex-col md:flex-row justify-between items-start md:items-center gap-3 ${borderClass}`;
+                card.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid ${iconClass} text-lg"></i>
+                        <div>
+                            <p class="font-bold text-sm">${al.message}</p>
+                            <p class="text-xs opacity-85 mt-0.5"><span class="font-semibold text-white">Action:</span> ${al.remediation}</p>
+                        </div>
+                    </div>
+                    <div class="text-right shrink-0">
+                        <span class="text-xs bg-black/30 px-2.5 py-1 rounded-full font-semibold border border-white/5 uppercase tracking-wider">${al.type.replace('_',' ')}: ${al.metric}</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // 2. Render Explainer factor lists
+        function renderExplainerSummary(explanation) {
+            const container = document.getElementById('shapSummaryContainer');
+            container.innerHTML = "";
+            
+            const points = explanation?.summary_points || [];
+            if (points.length === 0) {
+                container.innerHTML = '<p class="text-slate-500">No factors extracted.</p>';
+                return;
+            }
+            
+            const list = document.createElement('ul');
+            list.className = "list-disc pl-5 space-y-2";
+            points.forEach(pt => {
+                const item = document.createElement('li');
+                item.textContent = pt;
+                list.appendChild(item);
+            });
+            container.appendChild(list);
+        }
+
+        // 3. Render Timeline forecast chart
+        function renderTimelineChart(data) {
+            const ctx = document.getElementById('timelineChart').getContext('2d');
+            if (timelineChart) timelineChart.destroy();
+            
+            // Extract history (last 12 points)
+            const historical = (data.historical || []).slice(-12);
+            
+            // Align predictions chronologically
+            const labels = [];
+            const histValues = [];
+            const forecastValues = [];
+            const upperConfidence = [];
+            const lowerConfidence = [];
+            
+            historical.forEach(h => {
+                labels.push(h.date);
+                histValues.push(h.depth);
+                forecastValues.push(null);
+                upperConfidence.push(null);
+                lowerConfidence.push(null);
+            });
+            
+            // Connect timeline transitions
+            if (historical.length > 0) {
+                const lastH = historical[historical.length - 1];
+                forecastValues[historical.length - 1] = lastH.depth;
+                upperConfidence[historical.length - 1] = lastH.depth;
+                lowerConfidence[historical.length - 1] = lastH.depth;
+            }
+            
+            (data.forecast || []).forEach(f => {
+                labels.push(f.date);
+                histValues.push(null);
+                forecastValues.push(f.predicted_depth_m);
+                
+                // Confidence interval band calculation based on confidence score
+                const spread = (1.0 - Number(f.confidence_score)) * 3.5;
+                upperConfidence.push(f.predicted_depth_m + spread);
+                lowerConfidence.push(f.predicted_depth_m - spread);
+            });
+            
+            timelineChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Historical Depth (m)',
+                            data: histValues,
+                            borderColor: '#00f2fe',
+                            backgroundColor: 'rgba(0, 242, 254, 0.15)',
+                            borderWidth: 3,
+                            fill: false,
+                            tension: 0.35
+                        },
+                        {
+                            label: 'Future Forecast (m)',
+                            data: forecastValues,
+                            borderColor: '#4facfe',
+                            borderWidth: 3,
+                            borderDash: [6, 6],
+                            fill: false,
+                            tension: 0.35
+                        },
+                        {
+                            label: 'Upper Bound',
+                            data: upperConfidence,
+                            borderColor: 'transparent',
+                            backgroundColor: 'transparent',
+                            fill: false,
+                            pointRadius: 0
+                        },
+                        {
+                            label: 'Confidence Interval (95%)',
+                            data: lowerConfidence,
+                            borderColor: 'transparent',
+                            backgroundColor: 'rgba(0, 242, 254, 0.07)',
+                            fill: '-1', // Fill area to upper bound
+                            pointRadius: 0
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: "#e6edf3", font: { family: "'Poppins', sans-serif" } } }
+                    },
+                    scales: {
+                        x: { ticks: { color: "#94a3b8" }, grid: { color: 'rgba(255,255,255,0.03)' } },
+                        y: { 
+                            ticks: { color: "#94a3b8" }, 
+                            grid: { color: 'rgba(255,255,255,0.06)' },
+                            title: { display: true, text: 'Meters Below Ground', color: '#00f2fe' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 4. Render SHAP local waterfall values
+        function renderShapChart(explanation) {
+            const ctx = document.getElementById('shapChart').getContext('2d');
+            if (shapChart) shapChart.destroy();
+            
+            const contributions = (explanation?.contributions || []).slice(0, 7);
+            const labels = contributions.map(c => c.label);
+            const values = contributions.map(c => c.impact);
+            const backgroundColors = values.map(v => v >= 0 ? 'rgba(239, 68, 68, 0.7)' : 'rgba(16, 185, 129, 0.7)');
+            const borderColors = values.map(v => v >= 0 ? '#ef4444' : '#10b981');
+            
+            shapChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'SHAP Contribution Impact',
+                        data: values,
+                        backgroundColor: backgroundColors,
+                        borderColor: borderColors,
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { color: "#94a3b8" }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        y: { ticks: { color: "#94a3b8" }, grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // 5. Render Global Feature Importance bar chart
+        function renderImportanceChart(explanation) {
+            const ctx = document.getElementById('importanceChart').getContext('2d');
+            if (importanceChart) importanceChart.destroy();
+            
+            const contributions = (explanation?.contributions || []).slice(0, 7);
+            const labels = contributions.map(c => c.label);
+            // Global feature importance is absolute magnitude of impact
+            const values = contributions.map(c => Math.abs(c.impact));
+            
+            importanceChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Global Mean Importance (|SHAP|)',
+                        data: values,
+                        backgroundColor: 'rgba(0, 242, 254, 0.65)',
+                        borderColor: '#00f2fe',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { color: "#94a3b8", font: { size: 9 } }, grid: { display: false } },
+                        y: { ticks: { color: "#94a3b8" }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        // 6. Render predictions table
+        function renderForecastTable(data) {
+            const tbody = document.getElementById('forecastTableBody');
+            tbody.innerHTML = "";
+            
+            const mapping = {
+                "7d": "Next 7 Days",
+                "30d": "Next 30 Days",
+                "3m": "Next 3 Months",
+                "1y": "Next 1 Year"
+            };
+            
+            (data.forecast || []).forEach(f => {
+                const depth = f.predicted_depth_m;
+                
+                // Determine Safety status
+                let statusBadge = '<span class="px-2 py-1 text-xs font-semibold bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 rounded-full">Safe</span>';
+                if (depth >= 8.5) {
+                    statusBadge = '<span class="px-2 py-1 text-xs font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/25 rounded-full">Critical Depletion</span>';
+                } else if (depth >= 6.5) {
+                    statusBadge = '<span class="px-2 py-1 text-xs font-semibold bg-amber-500/10 text-amber-300 border border-amber-500/20 rounded-full">Depleted warning</span>';
+                }
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-bold text-white">${mapping[f.horizon] || f.horizon}</td>
+                    <td class="py-3 px-4 text-slate-300">${f.date}</td>
+                    <td class="py-3 px-4 font-semibold text-cyberCyan">${depth.toFixed(2)} m</td>
+                    <td class="py-3 px-4">${Math.round(f.confidence_score * 100)}%</td>
+                    <td class="py-3 px-4 text-slate-400">${f.model_used}</td>
+                    <td class="py-3 px-4">${statusBadge}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // CSV Export Handler
+        document.getElementById('exportCsvBtn').addEventListener('click', function() {
+            if (!globalForecastData || !globalForecastData.forecast) return;
+            
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Horizon,Forecast Date,Predicted Depth (m),Confidence score,Model Used,MAE,RMSE\n";
+            
+            globalForecastData.forecast.forEach(f => {
+                csvContent += `${f.horizon},${f.date},${f.predicted_depth_m},${f.confidence_score},${f.model_used},${globalForecastData.mae},${globalForecastData.rmse}\n`;
+            });
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `groundwater_forecast_${globalForecastData.district}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        // PDF Export Handler (utilizes existing backend generation engine)
+        document.getElementById('exportPdfBtn').addEventListener('click', function() {
+            if (!globalForecastData) return;
+            const district = document.getElementById('districtSelect').value;
+            const village = document.getElementById('stationSelect').value;
+            
+            const query = new URLSearchParams({
+                district: district,
+                village: village
+            }).toString();
+            window.location.href = `/download-report?${query}`;
+        });
+    </script>
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

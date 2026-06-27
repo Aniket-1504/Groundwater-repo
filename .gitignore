@@ -1,0 +1,44 @@
+# Python
+venv/
+.venv/
+ENV/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+*.pkl
+*.model
+
+# Databases
+*.db
+*.sqlite
+users.db
+
+# Environments
+.env
+.env.*
+.vars
+.secrets
+
+# IDEs
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# User uploads & downloads
+uploads/
+test_output.pdf
+actual_vs_predicted.png
+feature_importance.png
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db

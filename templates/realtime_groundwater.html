@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Groundwater Prediction</title>
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* ==========================================
+           RESET & BASE STYLES
+           ========================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #070b19;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+
+        body {
+            background: #070b19;
+            background-image: 
+                radial-gradient(rgba(0, 242, 254, 0.08) 1px, transparent 0),
+                radial-gradient(rgba(0, 242, 254, 0.05) 1px, transparent 0);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            color: #f8fafc;
+            overflow-x: hidden;
+            position: relative;
+            padding-top: 110px;
+            padding-bottom: 60px;
+        }
+
+        /* ==========================================
+           FLOATING GLOW ORBS
+           ========================================== */
+        .glow-orb {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            z-index: -2;
+            filter: blur(140px);
+            pointer-events: none;
+            opacity: 0.35;
+        }
+        .orb-1 {
+            background: radial-gradient(circle, #00f2fe, #4facfe, transparent 70%);
+            top: -15%;
+            left: -15%;
+            animation: floatOrb1 20s infinite alternate ease-in-out;
+        }
+        .orb-2 {
+            background: radial-gradient(circle, #00f5a0, #00d9ff, transparent 70%);
+            bottom: -15%;
+            right: -15%;
+            animation: floatOrb2 18s infinite alternate ease-in-out;
+        }
+        .orb-3 {
+            background: radial-gradient(circle, #7f00ff, #ff007f, transparent 70%);
+            top: 40%;
+            right: 15%;
+            width: 400px;
+            height: 400px;
+            opacity: 0.15;
+            animation: floatOrb3 22s infinite alternate ease-in-out;
+        }
+
+        @keyframes floatOrb1 {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(100px, 80px) scale(1.1); }
+        }
+        @keyframes floatOrb2 {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(-100px, -80px) scale(1.15); }
+        }
+        @keyframes floatOrb3 {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(-50px, 50px) scale(0.9); }
+        }
+
+        /* ==========================================
+           TITLE STYLING
+           ========================================== */
+        .title {
+            text-align: center;
+            font-size: 38px;
+            font-weight: 800;
+            margin-bottom: 45px;
+            position: relative;
+            letter-spacing: 0.5px;
+            color: #ffffff;
+        }
+        .title span {
+            background: linear-gradient(90deg, #00f2fe, #4facfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(0, 242, 254, 0.2);
+        }
+        .title::after {
+            content: "";
+            display: block;
+            width: 65px;
+            height: 4px;
+            background: linear-gradient(90deg, #00f2fe, #4facfe);
+            margin: 15px auto 0;
+            border-radius: 2px;
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+        }
+
+        /* ==========================================
+           GLASS CARD DESIGN
+           ========================================== */
+        .glass-card {
+            background: rgba(13, 21, 39, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(25px);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            margin-bottom: 25px;
+        }
+        .glass-card:hover {
+            border-color: rgba(0, 242, 254, 0.22);
+            box-shadow: 0 25px 50px -10px rgba(0, 242, 254, 0.15);
+        }
+
+        /* Card Headers */
+        .glass-card h5 {
+            font-weight: 700;
+            font-size: 19px;
+            color: #ffffff;
+            margin-bottom: 20px;
+            border-left: 4px solid #00f2fe;
+            padding-left: 12px;
+        }
+
+        /* Form Inputs & Select */
+        .form-control, select.form-control {
+            background: rgba(10, 17, 33, 0.7) !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(0, 242, 254, 0.2) !important;
+            border-radius: 12px;
+            padding: 12px 18px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus, select.form-control:focus {
+            border-color: #00f2fe !important;
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.25) !important;
+            outline: none;
+        }
+        label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+
+        /* Buttons */
+        .btn-refresh {
+            background: linear-gradient(90deg, #00f2fe, #4facfe);
+            border: none;
+            color: #070b19;
+            font-weight: 700;
+            border-radius: 12px;
+            padding: 12px 30px;
+            letter-spacing: 0.5px;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            box-shadow: 0 4px 15px rgba(0, 242, 254, 0.25);
+        }
+        .btn-refresh:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 242, 254, 0.4);
+            color: #070b19;
+        }
+        .btn-refresh i {
+            margin-right: 8px;
+        }
+
+        .btn-secondary-custom {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            color: #ffffff;
+            font-weight: 600;
+            border-radius: 12px;
+            padding: 12px 30px;
+            transition: all 0.4s;
+        }
+        .btn-secondary-custom:hover {
+            background: rgba(0, 242, 254, 0.1);
+            border-color: #00f2fe;
+            transform: translateY(-3px);
+        }
+
+        /* Text Accents */
+        .text-cyan {
+            color: #00f2fe !important;
+            font-weight: 700;
+        }
+        .text-light-slate {
+            color: #cbd5e1;
+        }
+
+        /* Parameters display list */
+        .param-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .param-item:last-child {
+            border-bottom: none;
+        }
+        .param-label {
+            color: #94a3b8;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .param-label i {
+            color: #00f2fe;
+            font-size: 16px;
+        }
+        .param-value {
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        /* Voice Assistant badge */
+        .badge.text-bg-danger {
+            background-color: rgba(239, 68, 68, 0.2) !important;
+            border: 1px solid #ef4444;
+            color: #ef4444 !important;
+            animation: pulseRecord 1.5s infinite;
+        }
+        @keyframes pulseRecord {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        /* Progress bars styling */
+        .progress {
+            border-radius: 10px;
+        }
+        .progress-bar {
+            border-radius: 10px;
+        }
+
+        /* Layout modifications */
+        @media (max-width: 768px) {
+            body {
+                padding-top: 130px;
+            }
+            .title {
+                font-size: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+{% include "navbar.html" %}
+
+<!-- Background glow orbs -->
+<div class="glow-orb orb-1"></div>
+<div class="glow-orb orb-2"></div>
+<div class="glow-orb orb-3"></div>
+
+<div class="container">
+    <h2 class="title">Real-Time <span>Groundwater & Farm</span> Prediction</h2>
+
+    <!-- CONTROL PANEL -->
+    <div class="glass-card">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-6">
+                <label for="district"><i class="fa-solid fa-location-dot me-2"></i>Select District</label>
+                <select id="district" class="form-control">
+                    <option value="">Select District</option>
+                    {% for d in districts %}
+                    <option value="{{ d }}">{{ d }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="village"><i class="fa-solid fa-house-chimney me-2"></i>Village/Station (Optional)</label>
+                <input id="village" class="form-control" placeholder="e.g. Station name">
+            </div>
+            <div class="col-md-3 text-md-end">
+                <button id="refreshBtn" class="btn btn-refresh w-100"><i class="fa-solid fa-rotate"></i>Refresh Data</button>
+            </div>
+        </div>
+        <div id="errorBox" class="alert alert-danger mt-3 d-none"></div>
+        <div id="alertBox" class="alert alert-warning mt-3 d-none"></div>
+    </div>
+
+    <!-- VOICE ASSISTANT -->
+    <div class="glass-card">
+        <h5><i class="fa-solid fa-microphone-lines me-2"></i>AI Voice Assistant</h5>
+        <div class="d-flex flex-wrap gap-3 align-items-center mb-3">
+            <button id="micBtn" class="btn btn-refresh"><i class="fa-solid fa-microphone"></i>Start Voice Query</button>
+            <span id="listeningBadge" class="badge text-bg-danger d-none"><i class="fa-solid fa-circle-dot me-1"></i>Listening...</span>
+            <div class="form-check form-switch ms-2">
+                <input class="form-check-input" type="checkbox" id="voiceToggle" checked>
+                <label class="form-check-label text-light-slate" for="voiceToggle">Voice responses</label>
+            </div>
+        </div>
+        <p class="text-cyan small mb-3">
+            <i class="fa-solid fa-circle-info me-1"></i>Try asking: "What is the weather in Akola", "Show groundwater level in Pune",
+            "Explain prediction in Nashik", or "Is water suitable for farming in Satara?".
+        </p>
+        <div class="p-3 rounded" style="background: rgba(10, 17, 33, 0.4); border: 1px solid rgba(255,255,255,0.05)">
+            <p class="mb-2"><b><i class="fa-solid fa-comment-dots me-2"></i>Recognized text:</b> <span id="recognizedText" class="text-light-slate">--</span></p>
+            <p class="mb-0"><b><i class="fa-solid fa-reply me-2"></i>Assistant reply:</b> <span id="voiceReply" class="text-cyan">--</span></p>
+        </div>
+    </div>
+
+    <!-- LIVE DATA GRID -->
+    <div class="row g-4">
+        <!-- Weather Card -->
+        <div class="col-md-4">
+            <div class="glass-card h-100">
+                <h5><i class="fa-solid fa-cloud-sun me-2"></i>Live Weather</h5>
+                <div class="mt-3">
+                    <div class="param-item">
+                        <span class="param-label"><i class="fa-solid fa-temperature-half"></i>Temperature</span>
+                        <span class="param-value"><span id="temp">--</span> °C</span>
+                    </div>
+                    <div class="param-item">
+                        <span class="param-label"><i class="fa-solid fa-droplet"></i>Humidity</span>
+                        <span class="param-value"><span id="humidity">--</span> %</span>
+                    </div>
+                    <div class="param-item">
+                        <span class="param-label"><i class="fa-solid fa-cloud-showers-heavy"></i>Rainfall</span>
+                        <span class="param-value"><span id="rainfall">--</span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Groundwater Prediction Card -->
+        <div class="col-md-8">
+            <div class="glass-card h-100">
+                <h5><i class="fa-solid fa-chart-line me-2"></i>Groundwater Level Prediction</h5>
+                <div class="mt-3">
+                    <div class="param-item">
+                        <span class="param-label"><i class="fa-solid fa-ruler-vertical"></i>Predicted Depth</span>
+                        <span class="param-value text-cyan"><span id="depth">--</span> m (below ground)</span>
+                    </div>
+                    <div class="param-item">
+                        <span class="param-label"><i class="fa-solid fa-circle-exclamation"></i>Status</span>
+                        <span class="param-value"><span id="status">--</span></span>
+                    </div>
+                    <div class="param-item" style="border-bottom: none;">
+                        <span class="param-label"><i class="fa-solid fa-lightbulb"></i>AI Trend Insight</span>
+                        <span class="param-value text-light-slate" style="text-align: right; font-weight: normal; max-width: 60%;"><span id="insight">--</span></span>
+                    </div>
+                </div>
+                <div class="text-md-end mt-4 pt-1">
+                    <button id="downloadBtn" class="btn btn-secondary-custom w-100 w-md-auto"><i class="fa-solid fa-file-pdf me-2"></i>Download Report (PDF)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FARMING & CROP PERSPECTIVE (DYNAMIC INTERACTIVE GRID) -->
+    <div class="row g-4 mt-1">
+        <div class="col-md-12">
+            <div class="glass-card">
+                <h5><i class="fa-solid fa-seedling me-2"></i>Farming & Crop Suitability Advisory</h5>
+                <div class="row mt-4">
+                    <div class="col-md-4 mb-3">
+                        <p class="mb-1 text-muted">Farming Suitability</p>
+                        <h4 id="cropSuitability" class="text-white">--</h4>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <p class="mb-1 text-muted">Predicted Water Quality Index (WQI)</p>
+                        <h4 id="cropWqi" class="text-cyan">--</h4>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <p class="mb-1 text-muted">Aquifer & Pumping Status</p>
+                        <p id="cropSummary" class="text-light-slate">--</p>
+                    </div>
+                </div>
+                
+                <hr style="border-color: rgba(255,255,255,0.08); margin: 25px 0;">
+                
+                <h6 class="text-cyan mb-4"><i class="fa-solid fa-bars-progress me-2"></i>Crop Suitability Model (AI Scored Match)</h6>
+                <div class="row" id="cropScoresGrid">
+                    <p class="text-muted ps-3">No crop details available. Select a district and click Refresh Data.</p>
+                </div>
+
+                <hr style="border-color: rgba(255,255,255,0.08); margin: 25px 0;">
+                
+                <div>
+                    <p class="mb-2 fw-bold text-warning"><i class="fa-solid fa-user-shield me-2"></i>Agricultural Advisory Actions:</p>
+                    <p id="cropActions" class="text-light-slate mb-0">--</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ML EXPLANATION -->
+    <div class="row g-4 mt-1">
+        <div class="col-md-12">
+            <div class="glass-card">
+                <h5><i class="fa-solid fa-brain me-2"></i>AI Prediction Interpretability (SHAP/Feature Importance)</h5>
+                <p id="explainText" class="text-light-slate mb-4">Feature explanation will appear after you refresh data.</p>
+                <div style="position: relative; width:100%; height:260px;">
+                    <canvas id="importanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function safeFixed(value) {
+    const n = Number(value);
+    return Number.isFinite(n) ? n.toFixed(2) : "0.00";
+}
+
+function rainfallDisplay(weather) {
+    if (weather && typeof weather.rainfall_text === "string" && weather.rainfall_text.trim()) {
+        return weather.rainfall_text;
+    }
+    const rainfall = Number(weather?.rainfall ?? weather?.rain ?? weather?.precipitation ?? 0);
+    if (!Number.isFinite(rainfall)) return "0.00 mm";
+    return rainfall.toFixed(2) + " mm" + (rainfall === 0 ? " (No rain now)" : "");
+}
+
+let importanceChart = null;
+let isListening = false;
+let recognition = null;
+
+// Dynamic Grid Rendering of Suitability Matches
+function renderCropScores(cropScores) {
+    const grid = document.getElementById("cropScoresGrid");
+    if (!grid) return;
+    grid.innerHTML = "";
+    
+    if (!cropScores || cropScores.length === 0) {
+        grid.innerHTML = '<p class="text-muted ps-3">No crop details available. Select a district and refresh.</p>';
+        return;
+    }
+    
+    cropScores.forEach(item => {
+        let progressBarColor = "bg-success";
+        if (item.score < 45) {
+            progressBarColor = "bg-danger";
+        } else if (item.score < 60) {
+            progressBarColor = "bg-warning";
+        } else if (item.score < 80) {
+            progressBarColor = "bg-info";
+        }
+        
+        const col = document.createElement("div");
+        col.className = "col-md-6 mb-3";
+        col.innerHTML = `
+            <div class="p-3 rounded" style="background: rgba(10, 17, 33, 0.4); border: 1px solid rgba(255,255,255,0.04); transition: all 0.3s ease;">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="fw-bold text-white">${item.crop}</span>
+                    <span class="badge bg-${item.badge_color}">${item.class}</span>
+                </div>
+                <p class="small text-muted mb-2">${item.description}</p>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="progress flex-grow-1" style="height: 8px; background: rgba(255,255,255,0.08);">
+                        <div class="progress-bar ${progressBarColor} progress-bar-striped progress-bar-animated" role="progressbar" style="width: ${item.score}%;" aria-valuenow="${item.score}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <span class="fw-bold text-cyan" style="min-width: 45px; text-align: right;">${item.score}%</span>
+                </div>
+            </div>
+        `;
+        grid.appendChild(col);
+    });
+}
+
+function renderImportanceChart(items) {
+    const labels = (items || []).slice(0, 7).map(i => i.feature.replaceAll("_", " ").toUpperCase());
+    const values = (items || []).slice(0, 7).map(i => Number(i.importance || 0));
+    const ctx = document.getElementById("importanceChart").getContext("2d");
+
+    if (importanceChart) {
+        importanceChart.destroy();
+    }
+
+    importanceChart = new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "SHAP Feature Contribution Value",
+                data: values,
+                backgroundColor: "rgba(0, 242, 254, 0.75)",
+                borderColor: "#00f2fe",
+                borderWidth: 1,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { 
+                legend: { labels: { color: "#e6edf3", font: { family: "'Poppins', sans-serif" } } } 
+            },
+            scales: {
+                x: { ticks: { color: "#94a3b8", font: { size: 10 } }, grid: { display: false } },
+                y: { ticks: { color: "#94a3b8" }, grid: { color: "rgba(255,255,255,0.05)" }, beginAtZero: true }
+            }
+        }
+    });
+}
+
+function speakText(text) {
+    const voiceOn = document.getElementById("voiceToggle").checked;
+    if (!voiceOn || !("speechSynthesis" in window)) return;
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = "en-US";
+    utter.rate = 1.0;
+    window.speechSynthesis.speak(utter);
+}
+
+async function processVoiceText(text) {
+    document.getElementById("recognizedText").textContent = text || "--";
+    try {
+        const res = await fetch("/voice-query", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query: text })
+        });
+        const data = await res.json();
+        document.getElementById("voiceReply").textContent = data.reply_text || "--";
+        speakText(data.reply_text || "");
+
+        if (data.result) {
+            const result = data.result;
+            document.getElementById("district").value = result.district || document.getElementById("district").value;
+            document.getElementById("temp").textContent = safeFixed(result.weather.temperature);
+            document.getElementById("humidity").textContent = safeFixed(result.weather.humidity);
+            document.getElementById("rainfall").textContent = rainfallDisplay(result.weather);
+            document.getElementById("depth").textContent = safeFixed(result.predicted_depth_m);
+            document.getElementById("status").textContent = result.level_status || "--";
+            document.getElementById("insight").textContent = result.insight || "--";
+            
+            document.getElementById("cropWqi").textContent = safeFixed(result?.water_quality?.wqi);
+            document.getElementById("cropSuitability").textContent = result?.crop_advisory?.suitability || "--";
+            document.getElementById("cropSummary").textContent = result?.crop_advisory?.summary || "--";
+            document.getElementById("cropActions").textContent = (result?.crop_advisory?.actions || []).join(" ") || "--";
+            
+            renderCropScores(result?.crop_advisory?.crop_scores || []);
+            
+            document.getElementById("explainText").textContent = (result.explanation || {}).text || "No explanation available.";
+            renderImportanceChart((result.explanation || {}).importance || []);
+        }
+    } catch (err) {
+        document.getElementById("voiceReply").textContent = "Voice query failed: " + err.message;
+    }
+}
+
+function initSpeechRecognition() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        document.getElementById("voiceReply").textContent = "Voice assistant is not supported in this browser. Please use Chrome.";
+        return null;
+    }
+
+    const rec = new SpeechRecognition();
+    rec.lang = "en-US";
+    rec.interimResults = false;
+    rec.maxAlternatives = 1;
+
+    rec.onstart = function () {
+        isListening = true;
+        document.getElementById("listeningBadge").classList.remove("d-none");
+        document.getElementById("micBtn").innerHTML = '<i class="fa-solid fa-stop"></i>Stop Listening';
+    };
+    rec.onend = function () {
+        isListening = false;
+        document.getElementById("listeningBadge").classList.add("d-none");
+        document.getElementById("micBtn").innerHTML = '<i class="fa-solid fa-microphone"></i>Start Voice Query';
+    };
+    rec.onerror = function (event) {
+        document.getElementById("voiceReply").textContent = "Voice error: " + event.error;
+    };
+    rec.onresult = function (event) {
+        const text = event.results[0][0].transcript;
+        processVoiceText(text);
+    };
+    return rec;
+}
+
+async function refreshRealtimeGroundwater() {
+    const district = document.getElementById("district").value;
+    const errorBox = document.getElementById("errorBox");
+    const alertBox = document.getElementById("alertBox");
+    errorBox.classList.add("d-none");
+    errorBox.textContent = "";
+    alertBox.classList.add("d-none");
+    alertBox.textContent = "";
+
+    if (!district) {
+        errorBox.textContent = "Please select a district.";
+        errorBox.classList.remove("d-none");
+        return;
+    }
+
+    try {
+        const res = await fetch(`/api/live-groundwater-predict?district=${encodeURIComponent(district)}`);
+        const data = await res.json();
+        if (!res.ok) {
+            throw new Error(data.error || "Failed to fetch live prediction");
+        }
+
+        document.getElementById("temp").textContent = safeFixed(data.weather.temperature);
+        document.getElementById("humidity").textContent = safeFixed(data.weather.humidity);
+        document.getElementById("rainfall").textContent = rainfallDisplay(data.weather);
+        document.getElementById("depth").textContent = safeFixed(data.predicted_depth_m);
+        document.getElementById("status").textContent = data.level_status || "--";
+        document.getElementById("insight").textContent = data.insight || "--";
+        
+        document.getElementById("cropWqi").textContent = safeFixed(data?.water_quality?.wqi);
+        document.getElementById("cropSuitability").textContent = data?.crop_advisory?.suitability || "--";
+        document.getElementById("cropSummary").textContent = data?.crop_advisory?.summary || "--";
+        document.getElementById("cropActions").textContent = (data?.crop_advisory?.actions || []).join(" ") || "--";
+
+        renderCropScores(data?.crop_advisory?.crop_scores || []);
+
+        const explanation = data.explanation || {};
+        document.getElementById("explainText").textContent = explanation.text || "No explanation available.";
+        renderImportanceChart(explanation.importance || []);
+
+        const alertData = data.alert || {};
+        if (alertData.triggered) {
+            const email = alertData.email || {};
+            let emailText = "";
+            if (email.sent) {
+                emailText = " Alert email sent successfully.";
+            } else if (email.error) {
+                emailText = ` Email status: ${email.error}`;
+            }
+            alertBox.textContent = (alertData.message || "Critical groundwater alert.") + emailText;
+            alertBox.classList.remove("d-none");
+        }
+    } catch (err) {
+        errorBox.textContent = err.message;
+        errorBox.classList.remove("d-none");
+    }
+}
+
+document.getElementById("refreshBtn").addEventListener("click", refreshRealtimeGroundwater);
+recognition = initSpeechRecognition();
+document.getElementById("micBtn").addEventListener("click", function () {
+    if (!recognition) return;
+    if (!isListening) {
+        recognition.start();
+    } else {
+        recognition.stop();
+    }
+});
+document.getElementById("downloadBtn").addEventListener("click", function () {
+    const district = document.getElementById("district").value;
+    const village = document.getElementById("village").value.trim();
+    const errorBox = document.getElementById("errorBox");
+    errorBox.classList.add("d-none");
+    errorBox.textContent = "";
+
+    if (!district) {
+        errorBox.textContent = "Please select a district before downloading report.";
+        errorBox.classList.remove("d-none");
+        return;
+    }
+
+    const query = new URLSearchParams({
+        district: district,
+        village: village
+    }).toString();
+    window.location.href = `/download-report?${query}`;
+});
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,2 @@
+<div class="container mt-5 pt-4">
+ for marrigin on the top when new page is added

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>District & Station Water Analysis</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body {
+    background: linear-gradient(135deg, #0d1117, #1b1f27);
+    color: #e6edf3;
+    font-family: 'Poppins', sans-serif;
+    padding-top: 40px;
+}
+.glass-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 25px;
+    backdrop-filter: blur(15px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+.section-title {
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    background: linear-gradient(90deg, #00f0ff, #ff00ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+select.form-control {
+    background: rgba(22, 27, 34, 0.9) !important;
+    color: #fff !important;
+    border: 1px solid #444;
+    border-radius: 12px;
+}
+select.form-control:focus {
+    outline: none;
+    box-shadow: 0 0 10px #00f0ff;
+}
+button.btn-info {
+    background: linear-gradient(135deg, #00f0ff, #ff00ff);
+    border: none;
+    font-weight: 600;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+button.btn-info:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px #ff00ff, 0 0 15px #00f0ff;
+}
+.chart-card {
+    margin-top: 30px;
+    padding: 25px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(15px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+canvas {
+    width: 100% !important;
+    height: 400px !important;
+}
+</style>
+</head>
+<body>
+<div class="container mt-5 pt-4">
+
+
+<h2 class="section-title">📍 District & Station Water Analysis</h2>
+
+<form method="POST" class="row g-3 glass-card">
+  <div class="col-md-6">
+    <label class="form-label">District</label>
+    <select name="district" class="form-control" required>
+      <option value="">Select District</option>
+      {% for d in districts %}
+      <option value="{{ d }}" {% if d==selected_district %}selected{% endif %}>{{ d }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-6">
+    <label class="form-label">Station</label>
+    <select name="station" class="form-control" required>
+      <option value="">Select Station</option>
+      {% for s in stations %}
+      <option value="{{ s }}" {% if s==selected_station %}selected{% endif %}>{{ s }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="text-center col-12">
+    <button class="btn btn-info px-5 mt-3">Show Trend</button>
+  </div>
+</form>
+
+{% if filtered_data %}
+
+<!-- DWLR Depth Chart -->
+<div class="chart-card">
+  <h4 class="section-title">📉 DWLR Depth Over Time</h4>
+  <canvas id="depthChart"></canvas>
+</div>
+
+<!-- Water Parameters Chart -->
+<div class="chart-card">
+  <h4 class="section-title">💧 Water Quality Parameters</h4>
+  <canvas id="paramsChart"></canvas>
+</div>
+
+<script>
+const data = {{ filtered_data | tojson }};
+
+// Extract dates (YYYY-MM-DD)
+const labels = data.map(d => d.sampling_date);
+
+// Helper to convert to numbers
+function num(v){ return v===null||v===undefined||isNaN(v)?0:parseFloat(v); }
+
+// ---- DWLR Depth Chart ----
+const depthCtx = document.getElementById('depthChart').getContext('2d');
+new Chart(depthCtx, {
+    type: 'line',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'DWLR Depth (m)',
+            data: data.map(d => num(d.approx_depth)),
+            borderColor: 'rgba(0, 240, 255, 1)',
+            backgroundColor: 'rgba(0, 240, 255, 0.2)',
+            borderWidth: 2,
+            tension: 0.3,
+            fill: true,
+            pointRadius: 4
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend:{ labels:{ color:'#fff' } } },
+        scales:{
+            x:{ ticks:{ color:'#fff' }, grid:{ color:'rgba(255,255,255,0.1)' } },
+            y:{ ticks:{ color:'#fff' }, grid:{ color:'rgba(255,255,255,0.1)' }, title:{ display:true, text:'Depth (m)' } }
+        }
+    }
+});
+
+// ---- Water Parameters Chart ----
+const paramsCtx = document.getElementById('paramsChart').getContext('2d');
+new Chart(paramsCtx, {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: [
+            {
+                label: 'pH',
+                data: data.map(d => num(d.ph)),
+                backgroundColor: 'rgba(255, 0, 255, 0.6)'
+            },
+            {
+                label: 'Dissolved O₂',
+                data: data.map(d => num(d.dissolved_o2)),
+                backgroundColor: 'rgba(0, 255, 128, 0.6)'
+            },
+            {
+                label: 'BOD',
+                data: data.map(d => num(d.bod)),
+                backgroundColor: 'rgba(255, 165, 0, 0.6)'
+            },
+            {
+                label: 'Nitrate N',
+                data: data.map(d => num(d.nitrate_n)),
+                backgroundColor: 'rgba(255, 69, 0, 0.6)'
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend:{ labels:{ color:'#fff' } } },
+        scales:{
+            x:{ ticks:{ color:'#fff' }, grid:{ color:'rgba(255,255,255,0.05)' } },
+            y:{ ticks:{ color:'#fff' }, grid:{ color:'rgba(255,255,255,0.1)' }, title:{ display:true, text:'Value' } }
+        }
+    }
+});
+</script>
+
+{% else %}
+<p class="text-center text-warning mt-3">No data available for this station.</p>
+{% endif %}
+
+<script>
+// Dynamic station loading on district change
+document.querySelector('select[name="district"]').addEventListener('change', function() {
+    const district = this.value;
+    const stationSelect = document.querySelector('select[name="station"]');
+    
+    // Clear and show placeholder
+    stationSelect.innerHTML = '<option value="">Loading stations...</option>';
+    
+    if (!district) {
+        stationSelect.innerHTML = '<option value="">Select Station</option>';
+        return;
+    }
+    
+    fetch(`/api/stations?district=${encodeURIComponent(district)}`)
+        .then(response => response.json())
+        .then(stations => {
+            stationSelect.innerHTML = '<option value="">Select Station</option>';
+            stations.forEach(station => {
+                const opt = document.createElement('option');
+                opt.value = station;
+                opt.textContent = station;
+                stationSelect.appendChild(opt);
+            });
+        })
+        .catch(err => {
+            console.error("Error fetching stations:", err);
+            stationSelect.innerHTML = '<option value="">Error loading stations</option>';
+        });
+});
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+{% include "navbar.html" %}
+</body>
+</html>

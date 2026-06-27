@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Batch Prediction</title>
+</head>
+<body>
+  <h2>Upload CSV</h2>
+
+  <form method="POST" enctype="multipart/form-data">
+    <input type="file" name="file" required>
+    <button type="submit">Upload</button>
+  </form>
+
+  {% if results %}
+    <h3>Results</h3>
+    {{ results | safe }}
+  {% endif %}
+
+  <br><a href="/">Back</a>
+</body>
+</html>

@@ -1,0 +1,277 @@
+<!-- navbar.html -->
+
+<!-- FontAwesome Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<nav class="navbar navbar-expand-lg glass-navbar fixed-top">
+  <div class="container">
+
+    <!-- Brand -->
+    <a class="navbar-brand" href="/">💧 Groundwater Monitor</a>
+
+    <!-- Toggle -->
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Menu -->
+    <div class="collapse navbar-collapse" id="navbarNav">
+
+      <ul class="navbar-nav ms-auto gap-2">
+
+        <!-- Home -->
+        <li class="nav-item">
+          <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">
+            <i class="fa-solid fa-house"></i> Home
+          </a>
+        </li>
+
+        <!-- Dashboard -->
+        <li class="nav-item">
+          <a class="nav-link {% if request.path == '/dashboard' %}active{% endif %}" href="/dashboard">
+            <i class="fa-solid fa-chart-line"></i> Dashboard
+          </a>
+        </li>
+
+        <!-- Forecast -->
+        <li class="nav-item">
+          <a class="nav-link {% if request.path == '/forecast-dashboard' %}active{% endif %}" href="/forecast-dashboard">
+            <i class="fa-solid fa-brain"></i> Forecast
+          </a>
+        </li>
+
+        <!-- Location -->
+        <li class="nav-item">
+          <a class="nav-link {% if request.path == '/location' %}active{% endif %}" href="/location">
+            <i class="fa-solid fa-location-dot"></i> Location
+          </a>
+        </li>
+
+        <!-- Map -->
+        <li class="nav-item">
+          <a class="nav-link {% if request.path == '/map' or request.path == '/map/' %}active{% endif %}" href="/map">
+            <i class="fa-solid fa-map-location-dot"></i> Map
+          </a>
+        </li>
+
+        <!-- District -->
+        <li class="nav-item">
+          <a class="nav-link {% if request.path == '/district' %}active{% endif %}" href="/district">
+            <i class="fa-solid fa-chart-column"></i> District
+          </a>
+        </li>
+
+        <!-- Real-Time Groundwater -->
+        <li class="nav-item">
+          <a class="nav-link {% if request.path == '/realtime-groundwater' %}active{% endif %}" href="/realtime-groundwater">
+            <i class="fa-solid fa-cloud-rain"></i> Real-Time
+          </a>
+        </li>
+
+        <!-- Chatbot -->
+        <li class="nav-item">
+          <a class="nav-link {% if request.path == '/chatbot' %}active{% endif %}" href="/chatbot">
+            <i class="fa-solid fa-robot"></i> Chatbot
+          </a>
+        </li>
+
+        <!-- Admin Login -->
+        <li class="nav-item">
+          <a class="nav-link admin-btn {% if request.path == '/admin' %}active{% endif %}" href="/admin">
+            <i class="fa-solid fa-user-shield"></i> Admin
+          </a>
+        </li>
+
+        {% if session.get('user_id') %}
+        <li class="nav-item">
+          <a class="nav-link" href="/logout">
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
+          </a>
+        </li>
+        {% else %}
+        <li class="nav-item">
+          <a class="nav-link {% if request.path == '/login' %}active{% endif %}" href="/login">
+            <i class="fa-solid fa-right-to-bracket"></i> Login
+          </a>
+        </li>
+        {% endif %}
+
+      </ul>
+
+    </div>
+  </div>
+</nav>
+
+<style>
+
+/* --- Premium Glass Navbar --- */
+.glass-navbar {
+    background: rgba(7, 11, 25, 0.75) !important;
+    backdrop-filter: blur(18px) saturate(180%);
+    -webkit-backdrop-filter: blur(18px) saturate(180%);
+    border-bottom: 1px solid rgba(0, 242, 254, 0.15);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4), 0 1px 15px rgba(0, 242, 254, 0.1);
+    padding: 14px 0;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    z-index: 9999 !important;
+}
+
+/* Brand Logo */
+.navbar-brand {
+    font-weight: 800 !important;
+    font-size: 1.5rem !important;
+    letter-spacing: -0.5px;
+    background: linear-gradient(90deg, #00f2fe, #4facfe);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.navbar-brand:hover {
+    transform: scale(1.03);
+    text-shadow: 0 0 20px rgba(0, 242, 254, 0.5);
+}
+
+.navbar-brand i {
+    display: inline-block;
+    animation: bounceDroplet 3s infinite alternate ease-in-out;
+}
+
+@keyframes bounceDroplet {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-4px); }
+}
+
+/* Nav links */
+.nav-link {
+    color: #94a3b8 !important;
+    padding: 10px 18px !important;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 0.2px;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative;
+    display: flex;
+    align-items: center;
+    border: 1px solid transparent;
+}
+
+.nav-link i {
+    margin-right: 8px;
+    font-size: 1.05rem;
+    transition: transform 0.3s ease;
+}
+
+/* Hover effects */
+.nav-link:hover {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(0, 242, 254, 0.15);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.nav-link:hover i {
+    transform: translateY(-2px);
+    color: #00f2fe;
+}
+
+/* Underline slide effect */
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 18px;
+    right: 18px;
+    height: 2px;
+    background: linear-gradient(90deg, #00f2fe, #4facfe);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+    transform-origin: right center;
+    border-radius: 2px;
+}
+
+.nav-link:hover::after {
+    transform: scaleX(1);
+    transform-origin: left center;
+}
+
+/* Active Link State */
+.nav-link.active {
+    background: linear-gradient(135deg, rgba(0, 242, 254, 0.12), rgba(79, 172, 254, 0.06)) !important;
+    color: #00f2fe !important;
+    border: 1px solid rgba(0, 242, 254, 0.35) !important;
+    box-shadow: 0 0 20px rgba(0, 242, 254, 0.2), inset 0 0 8px rgba(0, 242, 254, 0.05);
+    text-shadow: 0 0 10px rgba(0, 242, 254, 0.4);
+}
+
+.nav-link.active i {
+    color: #00f2fe;
+}
+
+.nav-link.active::after {
+    display: none; /* Hide hover underline when already active */
+}
+
+/* Admin Button Special Styles */
+.admin-btn {
+    background: rgba(239, 68, 68, 0.08) !important;
+    border-color: rgba(239, 68, 68, 0.15) !important;
+    color: #fca5a5 !important;
+}
+
+.admin-btn:hover {
+    background: rgba(239, 68, 68, 0.15) !important;
+    border-color: rgba(239, 68, 68, 0.3) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
+}
+
+.admin-btn:hover i {
+    color: #ef4444;
+}
+
+/* Mobile Dropdown Styling */
+@media (max-width: 991px) {
+    .navbar-collapse {
+        background: rgba(13, 21, 39, 0.95);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        padding: 20px;
+        margin-top: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+    
+    .navbar-nav {
+        gap: 8px !important;
+    }
+    
+    .nav-link {
+        justify-content: center;
+    }
+    
+    .nav-link::after {
+        left: 35%;
+        right: 35%;
+    }
+}
+
+/* Fix Tailwind conflict with Bootstrap collapse in navbar */
+.navbar-collapse.collapse {
+    display: flex !important;
+    visibility: visible !important;
+}
+@media (max-width: 991px) {
+    .navbar-collapse.collapse:not(.show) {
+        display: none !important;
+    }
+    .navbar-collapse.collapse.show {
+        display: flex !important;
+    }
+}
+
+</style>

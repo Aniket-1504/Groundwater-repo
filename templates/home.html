@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Groundwater Resource Evaluation</title>
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+
+/* ==========================================
+   RESET & BASE STYLES
+   ========================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #070b19;
+}
+::-webkit-scrollbar-thumb {
+    background: #1e293b;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #334155;
+}
+
+body {
+    background: #070b19;
+    background-image: 
+        radial-gradient(rgba(0, 242, 254, 0.08) 1px, transparent 0),
+        radial-gradient(rgba(0, 242, 254, 0.05) 1px, transparent 0);
+    background-size: 40px 40px;
+    background-position: 0 0, 20px 20px;
+    color: #f8fafc;
+    overflow-x: hidden;
+    position: relative;
+    padding-bottom: 0;
+}
+
+/* ==========================================
+   FLOATING GLOW ORBS
+   ========================================== */
+.glow-orb {
+    position: fixed;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    z-index: -2;
+    filter: blur(140px);
+    pointer-events: none;
+    opacity: 0.4;
+}
+.orb-1 {
+    background: radial-gradient(circle, #00f2fe, #4facfe, transparent 70%);
+    top: -15%;
+    left: -15%;
+    animation: floatOrb1 20s infinite alternate ease-in-out;
+}
+.orb-2 {
+    background: radial-gradient(circle, #00f5a0, #00d9ff, transparent 70%);
+    bottom: -15%;
+    right: -15%;
+    animation: floatOrb2 18s infinite alternate ease-in-out;
+}
+.orb-3 {
+    background: radial-gradient(circle, #7f00ff, #ff007f, transparent 70%);
+    top: 35%;
+    right: 10%;
+    width: 450px;
+    height: 450px;
+    opacity: 0.2;
+    animation: floatOrb3 22s infinite alternate ease-in-out;
+}
+
+@keyframes floatOrb1 {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(120px, 80px) scale(1.1); }
+}
+@keyframes floatOrb2 {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(-120px, -80px) scale(1.15); }
+}
+@keyframes floatOrb3 {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(-60px, 60px) scale(0.9); }
+}
+
+/* ==========================================
+   HERO SECTION
+   ========================================== */
+.hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding-top: 120px;
+    padding-bottom: 60px;
+}
+
+.hero h1 {
+    font-size: 64px;
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.5px;
+    color: #ffffff;
+}
+
+.hero h1 span {
+    background: linear-gradient(90deg, #00f2fe, #00f5a0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 40px rgba(0, 242, 254, 0.25);
+}
+
+.hero p {
+    font-size: 19px;
+    margin-top: 25px;
+    color: #94a3b8;
+    line-height: 1.7;
+    max-width: 580px;
+}
+
+.btn-main {
+    padding: 15px 38px;
+    border-radius: 50px;
+    font-weight: 600;
+    margin-right: 15px;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+    letter-spacing: 0.5px;
+    border: 1px solid transparent;
+}
+
+.btn1 {
+    background: linear-gradient(90deg, #00f2fe, #4facfe);
+    color: #070b19;
+}
+.btn1:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0, 242, 254, 0.4);
+}
+
+.btn2 {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(0, 242, 254, 0.4);
+    color: #ffffff;
+}
+.btn2:hover {
+    background: rgba(0, 242, 254, 0.1);
+    border-color: #00f2fe;
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0, 242, 254, 0.2);
+}
+
+/* ==========================================
+   CYBER-WATER BUBBLE
+   ========================================== */
+.hero-image {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.bubble-container {
+    position: relative;
+    width: 420px;
+    height: 420px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.orbit-ring {
+    position: absolute;
+    width: 430px;
+    height: 430px;
+    border: 1.5px dashed rgba(0, 242, 254, 0.35);
+    border-radius: 50%;
+    animation: rotateOrbit 25s infinite linear;
+}
+
+.orbit-dot {
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    width: 12px;
+    height: 12px;
+    background: #00f2fe;
+    border-radius: 50%;
+    box-shadow: 0 0 15px #00f2fe;
+}
+
+.water-bubble {
+    width: 310px;
+    height: 310px;
+    background: linear-gradient(135deg, rgba(0, 242, 254, 0.75), rgba(79, 172, 254, 0.55));
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+    box-shadow: 
+        inset 0 20px 40px rgba(255, 255, 255, 0.4),
+        inset 0 -20px 40px rgba(0, 0, 0, 0.3),
+        0 20px 50px rgba(0, 242, 254, 0.45),
+        0 0 100px rgba(0, 242, 254, 0.2);
+    animation: morphBubble 8s infinite alternate ease-in-out, floatBubble 4s infinite alternate ease-in-out;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 110px;
+    user-select: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.water-bubble::after {
+    content: "";
+    position: absolute;
+    top: 15px;
+    left: 45px;
+    width: 60px;
+    height: 30px;
+    background: rgba(255, 255, 255, 0.45);
+    border-radius: 50%;
+    transform: rotate(-15deg);
+    filter: blur(1px);
+}
+
+@keyframes rotateOrbit {
+    100% { transform: rotate(360deg); }
+}
+@keyframes morphBubble {
+    0% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+    50% { border-radius: 40% 60% 50% 50% / 50% 60% 40% 50%; }
+    100% { border-radius: 50% 50% 60% 40% / 60% 40% 60% 40%; }
+}
+@keyframes floatBubble {
+    0% { transform: translateY(10px); }
+    100% { transform: translateY(-15px); }
+}
+
+/* ==========================================
+   STATS SECTION
+   ========================================== */
+.stats {
+    margin-top: -30px;
+    margin-bottom: 100px;
+}
+
+.stat-card {
+    background: rgba(13, 21, 39, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(15px);
+    padding: 35px;
+    text-align: center;
+    border-radius: 20px;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, #00f2fe, #4facfe);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.stat-card:hover::before {
+    opacity: 1;
+}
+
+.stat-card:hover {
+    border-color: rgba(0, 242, 254, 0.25);
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px -10px rgba(0, 242, 254, 0.25);
+}
+
+.stat-card i {
+    font-size: 45px;
+    background: linear-gradient(135deg, #00f2fe, #4facfe);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 20px;
+}
+
+.stat-card h2 {
+    font-size: 42px;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 8px;
+}
+
+.stat-card p {
+    color: #94a3b8;
+    font-size: 15px;
+    margin: 0;
+}
+
+/* ==========================================
+   SECTION & GENERAL CARD STYLES
+   ========================================== */
+.section-title {
+    font-size: 42px;
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 60px;
+    position: relative;
+    letter-spacing: 0.5px;
+    color: #ffffff;
+}
+
+.section-title span {
+    background: linear-gradient(90deg, #00f2fe, #4facfe);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: none;
+}
+
+.section-title::after {
+    content: "";
+    display: block;
+    width: 65px;
+    height: 4px;
+    background: linear-gradient(90deg, #00f2fe, #4facfe);
+    margin: 15px auto 0;
+    border-radius: 2px;
+    box-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+}
+
+.about-card {
+    background: rgba(13, 21, 39, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(25px);
+    border-radius: 24px;
+    padding: 50px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.about-card:hover {
+    border-color: rgba(0, 242, 254, 0.3);
+    transform: translateY(-6px);
+    box-shadow: 0 25px 50px -10px rgba(0, 242, 254, 0.2);
+}
+
+.about-card p {
+    font-size: 18px;
+    line-height: 1.8;
+    color: #cbd5e1;
+    margin: 0;
+}
+
+/* ==========================================
+   FEATURES SECTION
+   ========================================== */
+.feature-card {
+    background: rgba(13, 21, 39, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(15px);
+    padding: 35px;
+    border-radius: 20px;
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    height: 100%;
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.25);
+}
+
+.feature-card:hover {
+    border-color: rgba(0, 242, 254, 0.3);
+    transform: translateY(-8px);
+    box-shadow: 0 20px 45px -10px rgba(0, 242, 254, 0.25);
+}
+
+.feature-card i {
+    font-size: 50px;
+    background: linear-gradient(135deg, #00f2fe, #00f5a0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 22px;
+}
+
+.feature-card h4 {
+    font-weight: 700;
+    color: #ffffff;
+    font-size: 20px;
+    margin-bottom: 12px;
+}
+
+.feature-card p {
+    color: #94a3b8;
+    font-size: 15px;
+    line-height: 1.65;
+    margin: 0;
+}
+
+/* ==========================================
+   HOW IT WORKS (TIMELINE)
+   ========================================== */
+.timeline {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 25px;
+    position: relative;
+}
+
+.timeline-box {
+    background: rgba(13, 21, 39, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 35px 25px;
+    border-radius: 20px;
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+.timeline-box::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: -15px;
+    width: 10px;
+    height: 10px;
+    background: #00f2fe;
+    box-shadow: 0 0 10px #00f2fe;
+    border-radius: 50%;
+    z-index: 5;
+}
+.timeline-box:last-child::after {
+    display: none;
+}
+
+.timeline-box:hover {
+    background: rgba(0, 242, 254, 0.08);
+    border-color: rgba(0, 242, 254, 0.35);
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px -10px rgba(0, 242, 254, 0.2);
+}
+
+.timeline-box i {
+    font-size: 45px;
+    background: linear-gradient(135deg, #00f2fe, #7f00ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 18px;
+}
+
+.timeline-box h5 {
+    font-weight: 700;
+    font-size: 18px;
+    color: #ffffff;
+    margin-bottom: 10px;
+}
+
+.timeline-box p {
+    color: #94a3b8;
+    font-size: 14px;
+    line-height: 1.55;
+    margin: 0;
+}
+
+/* ==========================================
+   TECHNOLOGY STACK
+   ========================================== */
+.tech-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 20px;
+}
+
+.tech-item {
+    background: rgba(13, 21, 39, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 25px 15px;
+    border-radius: 16px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: #cbd5e1;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.tech-item i {
+    display: block;
+    font-size: 42px;
+    margin-bottom: 12px;
+    transition: transform 0.4s;
+}
+
+.tech-item:hover {
+    background: rgba(255, 255, 255, 0.03);
+    transform: translateY(-6px);
+    color: #ffffff;
+}
+.tech-item:hover i {
+    transform: scale(1.15) rotate(5deg);
+}
+
+/* Hover Accent Colors per Tech Card */
+.tech-item:nth-child(1):hover { border-color: #3776AB; box-shadow: 0 10px 25px rgba(55, 118, 171, 0.25); } /* Python */
+.tech-item:nth-child(2):hover { border-color: #F29111; box-shadow: 0 10px 25px rgba(242, 145, 17, 0.25); } /* MySQL */
+.tech-item:nth-child(3):hover { border-color: #E34F26; box-shadow: 0 10px 25px rgba(227, 79, 38, 0.25); }  /* HTML5 */
+.tech-item:nth-child(4):hover { border-color: #1572B6; box-shadow: 0 10px 25px rgba(21, 114, 182, 0.25); } /* CSS3 */
+.tech-item:nth-child(5):hover { border-color: #F7DF1E; box-shadow: 0 10px 25px rgba(247, 223, 30, 0.25); }  /* JS */
+.tech-item:nth-child(6):hover { border-color: #7952B3; box-shadow: 0 10px 25px rgba(121, 82, 179, 0.25); }  /* Bootstrap */
+.tech-item:nth-child(7):hover { border-color: #FF7043; box-shadow: 0 10px 25px rgba(255, 112, 67, 0.25); } /* Plotly */
+.tech-item:nth-child(8):hover { border-color: #FF6F00; box-shadow: 0 10px 25px rgba(255, 111, 0, 0.25); }  /* TensorFlow */
+.tech-item:nth-child(9):hover { border-color: #FFFFFF; box-shadow: 0 10px 25px rgba(255, 255, 255, 0.15); } /* GitHub */
+
+/* ==========================================
+   CTA SECTION
+   ========================================== */
+.cta {
+    background: radial-gradient(circle at top left, rgba(0, 242, 254, 0.15), transparent 60%),
+                radial-gradient(circle at bottom right, rgba(127, 0, 255, 0.15), transparent 60%),
+                rgba(13, 21, 39, 0.6);
+    border: 1px solid rgba(0, 242, 254, 0.2);
+    padding: 80px 40px;
+    border-radius: 30px;
+    text-align: center;
+    backdrop-filter: blur(25px);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), 
+                0 0 100px rgba(0, 242, 254, 0.1);
+    margin-top: 50px;
+}
+
+.cta h2 {
+    font-size: 45px;
+    font-weight: 800;
+    margin-bottom: 20px;
+    color: #ffffff;
+}
+
+.cta p {
+    font-size: 18px;
+    color: #94a3b8;
+    margin-bottom: 40px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ==========================================
+   FOOTER SECTION
+   ========================================== */
+footer {
+    margin-top: 120px;
+    background: #030712;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 60px 0;
+    text-align: center;
+    position: relative;
+}
+
+footer h3 {
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 22px;
+    margin-bottom: 12px;
+}
+
+footer p {
+    color: #64748b;
+    font-size: 14px;
+}
+
+footer hr {
+    border-color: rgba(255, 255, 255, 0.06);
+    margin: 30px 0;
+}
+
+/* ==========================================
+   RESPONSIVE MEDIA QUERIES
+   ========================================== */
+@media (max-width: 992px) {
+    .hero {
+        text-align: center;
+        padding-top: 140px;
+    }
+    
+    .hero h1 {
+        font-size: 48px;
+    }
+    
+    .hero p {
+        margin-left: auto;
+        margin-right: auto;
+    }
+    
+    .bubble-container {
+        margin-top: 60px;
+        width: 320px;
+        height: 320px;
+    }
+    
+    .orbit-ring {
+        width: 330px;
+        height: 330px;
+    }
+    
+    .water-bubble {
+        width: 240px;
+        height: 240px;
+        font-size: 80px;
+    }
+    
+    .timeline {
+        grid-template-columns: 1fr;
+    }
+    
+    .timeline-box::after {
+        display: none;
+    }
+}
+
+</style>
+
+</head>
+
+<body>
+{% include "navbar.html" %}
+
+<!-- Floating dynamic glow blobs -->
+<div class="glow-orb orb-1"></div>
+<div class="glow-orb orb-2"></div>
+<div class="glow-orb orb-3"></div>
+
+<div class="container hero">
+    <div class="row align-items-center">
+        <div class="col-lg-6">
+            <h1>
+                Real Time<br>
+                <span>Groundwater</span><br>
+                Monitoring
+            </h1>
+            <p>
+                Predict groundwater levels using Digital Water Level Recorder (DWLR) data,
+                Machine Learning algorithms, and real-time environmental parameters.
+                Our intelligent system helps researchers, authorities, and decision-makers
+                monitor groundwater resources, identify trends, and support sustainable water
+                management through accurate forecasting.
+            </p>
+            <div class="mt-4 pt-2">
+                <a href="/dashboard" class="btn-main btn1">
+                    Explore Dashboard
+                </a>
+                <a href="/map" class="btn-main btn2">
+                    View Map
+                </a>
+            </div>
+        </div>
+        <div class="col-lg-6 hero-image">
+            <div class="bubble-container">
+                <div class="orbit-ring">
+                    <div class="orbit-dot"></div>
+                </div>
+                <div class="water-bubble">
+                    💧
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="stats">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <i class="fa-solid fa-water"></i>
+                    <h2>250+</h2>
+                    <p>DWLR Stations</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <h2>98%</h2>
+                    <p>Prediction Accuracy</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <i class="fa-solid fa-cloud-rain"></i>
+                    <h2>24/7</h2>
+                    <p>Monitoring</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <i class="fa-solid fa-robot"></i>
+                    <h2>AI</h2>
+                    <p>Machine Learning</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="container mb-5">
+    <h2 class="section-title">
+        About <span>Project</span>
+    </h2>
+    <div class="about-card">
+        <p>
+            The Real-Time Groundwater Resource Evaluation System leverages
+            Digital Water Level Recorder (DWLR) datasets, Artificial Intelligence,
+            Machine Learning, and Time-Series Analysis to predict groundwater levels
+            with high accuracy. The platform analyzes historical and real-time
+            groundwater data alongside rainfall, temperature, and environmental
+            parameters to provide forecasts, trend analysis, interactive visualizations,
+            and early warning alerts. It empowers researchers, government agencies,
+            and policymakers to make informed decisions for sustainable groundwater
+            resource management.
+        </p>
+    </div>
+</section>
+
+<!-- ================= FEATURES ================= -->
+<section class="container py-5">
+    <h2 class="section-title">
+        Key <span>Features</span>
+    </h2>
+    <div class="row g-4">
+        <div class="col-lg-4 col-md-6">
+            <div class="feature-card">
+                <i class="fa-solid fa-chart-line"></i>
+                <h4>AI Prediction</h4>
+                <p>
+                    Predict future groundwater levels using Machine Learning
+                    and Time-Series models.
+                </p>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6">
+            <div class="feature-card">
+                <i class="fa-solid fa-map-location-dot"></i>
+                <h4>Interactive Map</h4>
+                <p>
+                    Visualize groundwater monitoring stations across different
+                    districts.
+                </p>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6">
+            <div class="feature-card">
+                <i class="fa-solid fa-cloud-rain"></i>
+                <h4>Real-Time Data</h4>
+                <p>
+                    Receive continuously updated DWLR readings with weather
+                    parameters.
+                </p>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6">
+            <div class="feature-card">
+                <i class="fa-solid fa-chart-column"></i>
+                <h4>Analytics Dashboard</h4>
+                <p>
+                    Interactive charts and trend analysis for better decision
+                    making.
+                </p>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6">
+            <div class="feature-card">
+                <i class="fa-solid fa-robot"></i>
+                <h4>AI Chatbot</h4>
+                <p>
+                    Get instant answers regarding groundwater statistics and
+                    prediction.
+                </p>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6">
+            <div class="feature-card">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <h4>Early Warning</h4>
+                <p>
+                    Detect groundwater depletion and generate intelligent
+                    alerts.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ================= HOW IT WORKS ================= -->
+<section class="container py-5">
+    <h2 class="section-title">
+        How <span>It Works</span>
+    </h2>
+    <div class="timeline">
+        <div class="timeline-box">
+            <i class="fa-solid fa-database"></i>
+            <h5>DWLR Data</h5>
+            <p>Collect groundwater data from Digital Water Level Recorders.</p>
+        </div>
+        <div class="timeline-box">
+            <i class="fa-solid fa-filter"></i>
+            <h5>Data Cleaning</h5>
+            <p>Missing values are cleaned and normalized.</p>
+        </div>
+        <div class="timeline-box">
+            <i class="fa-solid fa-brain"></i>
+            <h5>AI Model</h5>
+            <p>Machine Learning predicts future groundwater levels.</p>
+        </div>
+        <div class="timeline-box">
+            <i class="fa-solid fa-chart-area"></i>
+            <h5>Visualization</h5>
+            <p>Interactive charts and graphs display groundwater trends.</p>
+        </div>
+        <div class="timeline-box">
+            <i class="fa-solid fa-bell"></i>
+            <h5>Alerts</h5>
+            <p>Early warning notifications help prevent depletion.</p>
+        </div>
+    </div>
+</section>
+
+<!-- ================= TECHNOLOGIES ================= -->
+<section class="container py-5">
+    <h2 class="section-title">
+        Technology <span>Stack</span>
+    </h2>
+    <div class="tech-grid">
+        <div class="tech-item">
+            <i class="fab fa-python"></i>
+            Python
+        </div>
+        <div class="tech-item">
+            <i class="fa-solid fa-database"></i>
+            MySQL
+        </div>
+        <div class="tech-item">
+            <i class="fab fa-html5"></i>
+            HTML5
+        </div>
+        <div class="tech-item">
+            <i class="fab fa-css3-alt"></i>
+            CSS3
+        </div>
+        <div class="tech-item">
+            <i class="fab fa-js"></i>
+            JavaScript
+        </div>
+        <div class="tech-item">
+            <i class="fab fa-bootstrap"></i>
+            Bootstrap
+        </div>
+        <div class="tech-item">
+            <i class="fa-solid fa-chart-simple"></i>
+            Plotly
+        </div>
+        <div class="tech-item">
+            <i class="fa-solid fa-microchip"></i>
+            TensorFlow
+        </div>
+        <div class="tech-item">
+            <i class="fab fa-github"></i>
+            GitHub
+        </div>
+    </div>
+</section>
+
+<!-- ================= CTA ================= -->
+<section class="container py-5">
+    <div class="cta">
+        <h2>Ready to Explore Groundwater Intelligence?</h2>
+        <p>
+            Monitor groundwater levels, visualize district-wise data,
+            and predict future trends with Artificial Intelligence.
+        </p>
+        <div>
+            <a href="/district" class="btn-main btn1">
+                Explore Dashboard
+            </a>
+            <a href="/realtime-groundwater" class="btn-main btn2">
+                Live Monitoring
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+    <div class="container">
+        <h3>💧 Groundwater Resource Evaluation</h3>
+        <p>Real-Time Groundwater Monitoring and Prediction using Digital Water Level Recorder (DWLR) Data</p>
+        <hr>
+        <p>© 2026 All Rights Reserved</p>
+    </div>
+</footer>
+</body>
+</html>

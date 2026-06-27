@@ -1,0 +1,45 @@
+<h2>Groundwater Level & WQI Dashboard</h2>
+
+<form method="POST" enctype="multipart/form-data">
+    <h3>1️⃣ Upload Historical CSV (optional)</h3>
+    <input type="file" name="file"><br><br>
+
+    <h3>2️⃣ Or Enter Water Level Inputs</h3>
+    <label>Previous Level 1:</label>
+    <input type="text" name="level_lag1" value="12"><br>
+    <label>Previous Level 2:</label>
+    <input type="text" name="level_lag2" value="12"><br>
+    <label>Rainfall (mm):</label>
+    <input type="text" name="rainfall" value="5"><br>
+    <label>Temperature (°C):</label>
+    <input type="text" name="temperature" value="25"><br><br>
+
+    <h3>3️⃣ Water Quality Inputs</h3>
+    <label>Temperature:</label><input type="text" name="wq_temperature" value="25"><br>
+    <label>Conductivity:</label><input type="text" name="conductivity" value="500"><br>
+    <label>Turbidity:</label><input type="text" name="turbidity" value="5"><br>
+    <label>TDS:</label><input type="text" name="tds" value="400"><br>
+    <label>Hardness:</label><input type="text" name="hardness" value="150"><br>
+    <label>Chlorides:</label><input type="text" name="chlorides" value="30"><br>
+    <label>Sulphate:</label><input type="text" name="sulphate" value="20"><br>
+    <label>Nitrate:</label><input type="text" name="nitrate_n" value="10"><br><br>
+
+    <button type="submit">Predict</button>
+</form>
+
+{% if wl_prediction %}
+    <h3>Predicted Groundwater Level: {{ wl_prediction }} meters</h3>
+    {% if alert %}<p style="color:red">{{ alert }}</p>{% endif %}
+{% endif %}
+
+{% if wqi_prediction %}
+    <h3>Water Quality Prediction:</h3>
+    <ul>
+        <li>pH: {{ wqi_prediction.ph }}</li>
+        <li>Dissolved O2: {{ wqi_prediction.dissolved_o2 }}</li>
+        <li>BOD: {{ wqi_prediction.bod }}</li>
+        <li>Nitrate: {{ wqi_prediction.nitrate_n }}</li>
+    </ul>
+    <p>WQI Score: {{ wqi_score }}</p>
+    <p>Category: {{ wqi_category }}</p>
+{% endif %}

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Admin Dashboard</title>
+
+<!-- Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+
+body{
+background: linear-gradient(135deg,#4facfe,#00f2fe);
+height:100vh;
+font-family: Arial, Helvetica, sans-serif;
+}
+
+.dashboard-card{
+border-radius:15px;
+box-shadow:0 10px 25px rgba(0,0,0,0.2);
+}
+
+.header{
+color:white;
+text-align:center;
+margin-bottom:30px;
+}
+
+.upload-box{
+padding:30px;
+border:2px dashed #ccc;
+border-radius:10px;
+background:#f8f9fa;
+text-align:center;
+}
+
+.btn-upload{
+background:#007bff;
+border:none;
+padding:10px 25px;
+border-radius:8px;
+}
+
+.btn-upload:hover{
+background:#0056b3;
+}
+
+.navbar{
+border-radius:10px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container mt-5">
+
+<div class="header">
+<h1><i class="fa-solid fa-user-shield"></i> Admin Dashboard</h1>
+<p>Water Quality Prediction System</p>
+</div>
+
+<div class="card dashboard-card p-4">
+
+<h4 class="mb-4"><i class="fa-solid fa-database"></i> Upload New Dataset</h4>
+
+{% if message %}
+<div class="alert alert-success">{{ message }}</div>
+{% endif %}
+{% if error %}
+<div class="alert alert-danger">{{ error }}</div>
+{% endif %}
+
+<div class="row mb-3">
+  <div class="col-md-6">
+    <div class="p-3 bg-light rounded">
+      <strong>Total Rows:</strong> {{ rows }}
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="p-3 bg-light rounded">
+      <strong>Total Districts:</strong> {{ districts }}
+    </div>
+  </div>
+</div>
+
+<form action="/admin/upload" method="post" enctype="multipart/form-data">
+
+<div class="upload-box mb-3">
+
+<i class="fa-solid fa-cloud-arrow-up fa-3x mb-3 text-primary"></i>
+
+<p>Upload monthly CSV (e.g. Oct, Nov). It will merge with existing data and retrain models automatically.</p>
+
+<input type="file" name="dataset" class="form-control" required>
+
+</div>
+
+<div class="text-center">
+<button type="submit" class="btn btn-upload text-white">
+<i class="fa-solid fa-upload"></i> Upload Dataset
+</button>
+</div>
+
+</form>
+
+<hr class="my-4">
+
+<div class="text-center">
+
+<a href="/" class="btn btn-success">
+<i class="fa-solid fa-globe"></i> Go to Website
+</a>
+
+</div>
+
+</div>
+
+</div>
+
+</body>
+</html>

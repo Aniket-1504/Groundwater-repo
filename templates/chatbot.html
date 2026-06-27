@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Water Assistant Chatbot</title>
+
+<!-- Bootstrap Required for Previous Navbar -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#f4f8ff;
+    color:#1f2d3d;
+
+    /* Important for fixed navbar */
+    padding-top:90px;
+}
+
+.wrap{
+    max-width:980px;
+    margin:20px auto;
+    padding:0 16px;
+}
+
+.page-title{
+    margin-bottom:18px;
+    font-weight:700;
+    color:#203a43;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:1fr 2fr;
+    gap:14px;
+}
+
+.card{
+    background:#fff;
+    border-radius:12px;
+    box-shadow:0 6px 18px rgba(0,0,0,0.08);
+    padding:14px;
+}
+
+.help-list p{
+    margin:8px 0;
+    font-size:14px;
+}
+
+.quick-btns button{
+    margin:4px 6px 4px 0;
+    padding:8px 10px;
+    border:1px solid #cfd8e3;
+    border-radius:8px;
+    background:#eef4ff;
+    cursor:pointer;
+}
+
+.quick-btns button:hover{
+    background:#dbeafe;
+}
+
+.chat-box{
+    height:420px;
+    overflow-y:auto;
+    border:1px solid #e2e8f0;
+    border-radius:8px;
+    padding:10px;
+    background:#f8fbff;
+    margin-bottom:10px;
+}
+
+.msg{
+    margin:8px 0;
+    padding:8px 10px;
+    border-radius:8px;
+    max-width:92%;
+    font-size:14px;
+    line-height:1.4;
+}
+
+.user{
+    margin-left:auto;
+    background:#dbeafe;
+}
+
+.bot{
+    background:#eef2ff;
+}
+
+.chat-row{
+    display:flex;
+    gap:8px;
+}
+
+.chat-row input{
+    flex:1;
+    padding:10px;
+    border:1px solid #cbd5e1;
+    border-radius:8px;
+}
+
+.chat-row button{
+    padding:10px 14px;
+    border:none;
+    border-radius:8px;
+    background:#2563eb;
+    color:white;
+    cursor:pointer;
+}
+
+.chat-row button:hover{
+    background:#1d4ed8;
+}
+
+.typing{
+    font-style:italic;
+    color:#5b6b82;
+    margin:6px 0;
+}
+
+.suggestions{
+    margin-top:8px;
+}
+
+.suggestions button{
+    margin:4px 6px 0 0;
+    padding:6px 10px;
+    border-radius:12px;
+    border:1px solid #d2dcec;
+    background:#f1f6ff;
+    font-size:12px;
+    cursor:pointer;
+}
+
+@media(max-width:900px){
+    .grid{
+        grid-template-columns:1fr;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- SAME Previous Navbar -->
+{% include "navbar.html" %}
+
+<div class="wrap">
+
+<h2 class="page-title">💧 Water Assistant Chatbot</h2>
+
+<div class="grid">
+
+<!-- Left Card -->
+<div class="card">
+
+<h3>Helping Chatbot</h3>
+
+<div class="help-list">
+<p><b>Ask about quality:</b> best district, worst district</p>
+<p><b>Ask about depth:</b> average depth district</p>
+<p><b>Get quick overview:</b> summary</p>
+<p><b>See top performers:</b> top 3 district</p>
+<p><b>Compare:</b> compare district Pune vs Nashik</p>
+<p><b>Depth ranking:</b> lowest depth / highest depth</p>
+<p><b>Stations:</b> best station</p>
+<p><b>Learning:</b> meaning of wqi, safe drinking water</p>
+<p><b>Water bodies:</b> top river / water body</p>
+<p><b>District details:</b> type district name</p>
+<p><b>Need help:</b> help</p>
+</div>
+
+<div class="quick-btns">
+<button onclick="askQuick('summary')">Summary</button>
+<button onclick="askQuick('best district')">Best District</button>
+<button onclick="askQuick('worst district')">Worst District</button>
+<button onclick="askQuick('average depth district')">Average Depth</button>
+<button onclick="askQuick('top 3 district')">Top 3 District</button>
+<button onclick="askQuick('compare district pune vs nashik')">Compare</button>
+<button onclick="askQuick('meaning of wqi')">WQI Meaning</button>
+<button onclick="askQuick('safe drinking water')">Safe Drinking</button>
+</div>
+
+</div>
+
+<!-- Right Card -->
+<div class="card">
+
+<div id="chatBox" class="chat-box">
+<div class="msg bot">
+Hello! I am your groundwater helping chatbot.
+Type <b>help</b> to see commands.
+</div>
+</div>
+
+<div class="chat-row">
+<input id="chatInput" type="text" placeholder="Ask something about water quality...">
+<button id="sendBtn">Send</button>
+</div>
+
+</div>
+
+</div>
+</div>
+
+<!-- Bootstrap JS Required for Navbar -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+function appendMessage(text,type){
+    const box = document.getElementById("chatBox");
+    const div = document.createElement("div");
+    div.className = "msg " + type;
+    div.innerHTML = text;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+}
+
+function removeTyping(){
+    const x = document.getElementById("typingMsg");
+    if(x) x.remove();
+}
+
+function showTyping(){
+    removeTyping();
+
+    const box = document.getElementById("chatBox");
+    const div = document.createElement("div");
+
+    div.id = "typingMsg";
+    div.className = "typing";
+    div.textContent = "Bot is thinking...";
+
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+}
+
+function renderSuggestions(items){
+
+    const box = document.getElementById("chatBox");
+
+    const old = document.getElementById("suggestionsBox");
+    if(old) old.remove();
+
+    if(!items || !items.length) return;
+
+    const wrap = document.createElement("div");
+    wrap.id = "suggestionsBox";
+    wrap.className = "suggestions";
+
+    items.slice(0,4).forEach(item=>{
+        const btn = document.createElement("button");
+        btn.textContent = item;
+        btn.onclick = ()=>askQuick(item);
+        wrap.appendChild(btn);
+    });
+
+    box.appendChild(wrap);
+    box.scrollTop = box.scrollHeight;
+}
+
+function askQuick(text){
+    document.getElementById("chatInput").value = text;
+    sendChat();
+}
+
+function sendChat(){
+
+    const input = document.getElementById("chatInput");
+    const message = input.value.trim();
+
+    if(!message) return;
+
+    appendMessage(message,"user");
+    input.value = "";
+
+    showTyping();
+
+    fetch("/chatbot-query",{
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+            message:message
+        })
+    })
+    .then(r=>r.json())
+    .then(data=>{
+        removeTyping();
+        appendMessage(data.reply || "No response from chatbot.","bot");
+        renderSuggestions(data.follow_ups || []);
+    })
+    .catch(()=>{
+        removeTyping();
+        appendMessage("Could not reach chatbot service.","bot");
+    });
+}
+
+document.getElementById("sendBtn").addEventListener("click",sendChat);
+
+document.getElementById("chatInput").addEventListener("keydown",function(e){
+    if(e.key==="Enter"){
+        e.preventDefault();
+        sendChat();
+    }
+});
+</script>
+
+</body>
+</html>
