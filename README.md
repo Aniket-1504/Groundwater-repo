@@ -13,8 +13,11 @@ Interactive dashboard with:
 Live sensor visualization
 Dynamic alerts for abnormal readings
 Region-wise groundwater depletion heatmaps
-Tech Stack
+
+Tech Stack:
+
 Layer
+
 Technology
 Frontend
 React.js
