@@ -30,11 +30,12 @@ Live DWLR sensor and weather data is ingested and preprocessed.
 Data flows through a Random Forest classifier and LSTM forecasting model.
 Predictions and anomalies are pushed to a React.js + Node.js dashboard.
 Users view live water-level trends, alerts, and depletion heatmaps by region.
-Team
+Team:
+
 Aniket Kadam
 Rutuja Kadam
 Sanika Kanchan
 Guide: Prof. S. D. Dighe
 Institution: Sinhgad Institute of Technology and Science, Pune (SPPU)
 Project Status
-Completed as a final-year capstone project (2024–25).
+Completed as a final-year capstone project (2025-26).
