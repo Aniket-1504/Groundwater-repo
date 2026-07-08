@@ -1,4 +1,5 @@
 Real-Time Groundwater Resource Evaluation using DWLR Data
+
 A real-time groundwater monitoring and prediction system that ingests live DWLR (Digital Water Level Recorder) sensor data along with weather API feeds to forecast groundwater levels and detect anomalies.
 Overview
 This project processes 50K+ time-series records to help stakeholders make informed decisions about groundwater resource management. It combines classical ML with deep learning to deliver accurate, seasonally-aware water-level predictions.
@@ -30,8 +31,10 @@ Live DWLR sensor and weather data is ingested and preprocessed.
 Data flows through a Random Forest classifier and LSTM forecasting model.
 Predictions and anomalies are pushed to a React.js + Node.js dashboard.
 Users view live water-level trends, alerts, and depletion heatmaps by region.
-Team
+Team:
+
 Aniket Kadam
+
 Rutuja Kadam
 Sanika Kanchan
 Guide: Prof. S. D. Dighe
