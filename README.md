@@ -40,7 +40,7 @@ A real-time groundwater monitoring system that ingests DWLR sensor data and weat
 - Sanika Kanchan
 - Guide: Prof. S. D. Dighe
 
-**Institution:** SPIT, Pune (SPPU)  
+**Institution:** SITS, Pune (SPPU)  
 **Status:** Completed (2025–26)
 
 ## Publication
@@ -48,6 +48,3 @@ A real-time groundwater monitoring system that ingests DWLR sensor data and weat
 **Paper:** AI-Based Groundwater Resource Evaluation System using Machine Learning  
 **Journal:** Journal of Advance and Future Research (JAAFR) - Published June 2026
 
-## License
-
-MIT License
